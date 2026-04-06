@@ -13,6 +13,17 @@ import camera from '@ohos.multimedia.camera';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
 
 const TAG: string = 'IndexPage';
+const COLOR_BG: string = '#F4F7FB';
+const COLOR_SURFACE: string = '#FFFFFF';
+const COLOR_SURFACE_ALT: string = '#F8FAFD';
+const COLOR_PRIMARY: string = '#0A59F7';
+const COLOR_PRIMARY_SOFT: string = '#EAF1FF';
+const COLOR_TEXT: string = '#18202A';
+const COLOR_MUTED: string = '#6F7A89';
+const COLOR_BORDER: string = '#E6EBF2';
+const COLOR_DANGER: string = '#D9485F';
+const COLOR_DANGER_SOFT: string = '#FFF1F3';
+const COLOR_OVERLAY: string = '#880A1220';
 
 class NasStoredConfig {
   host: string = '';
@@ -1503,168 +1514,186 @@ struct Index {
   }
 
   @Builder PhotoTabBuilder() {
-    Column({ space: 2 }) {
-      Text('📷').fontSize(22).fontColor(this.currentTab === 0 ? '#007DFF' : '#999999')
-      Text('拍照').fontSize(10).fontColor(this.currentTab === 0 ? '#007DFF' : '#666666')
+    Column({ space: 4 }) {
+      Text('上传').fontSize(13).fontColor(this.currentTab === 0 ? COLOR_PRIMARY : COLOR_MUTED)
         .fontWeight(this.currentTab === 0 ? FontWeight.Medium : FontWeight.Normal)
+      Row() {}.width(22).height(3).borderRadius(2).backgroundColor(this.currentTab === 0 ? COLOR_PRIMARY : '#00000000')
     }.width('100%').height(56).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
   }
 
   @Builder SettingsTabBuilder() {
-    Column({ space: 2 }) {
-      Text('⚙️').fontSize(22).fontColor(this.currentTab === 1 ? '#007DFF' : '#999999')
-      Text('设置').fontSize(10).fontColor(this.currentTab === 1 ? '#007DFF' : '#666666')
+    Column({ space: 4 }) {
+      Text('设置').fontSize(13).fontColor(this.currentTab === 1 ? COLOR_PRIMARY : COLOR_MUTED)
         .fontWeight(this.currentTab === 1 ? FontWeight.Medium : FontWeight.Normal)
+      Row() {}.width(22).height(3).borderRadius(2).backgroundColor(this.currentTab === 1 ? COLOR_PRIMARY : '#00000000')
     }.width('100%').height(56).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
   }
 
   @Builder SettingsContent() {
     Column() {
-      Text('⚙️ NAS 设置').fontSize(19).fontWeight(FontWeight.Bold)
-        .width('100%').padding({ left: 16, right: 16, top: this.statusBarHeight + 12, bottom: 14 })
-        .textAlign(TextAlign.Center)
+      Column({ space: 6 }) {
+        Text('连接与上传设置').fontSize(24).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+        Text('配置 WebDAV、账号和拍照后的自动行为').fontSize(12).fontColor(COLOR_MUTED)
+      }.width('100%').padding({ left: 20, right: 20, top: this.statusBarHeight + 18, bottom: 18 })
 
       Scroll() {
-        Column({ space: 0 }) {
-          Text('连接配置').fontSize(17).fontWeight(FontWeight.Bold).fontColor('#333333')
-            .width('100%').padding({ left: 20, top: 20, bottom: 14 })
+        Column({ space: 16 }) {
+          Column({ space: 14 }) {
+            Text('连接配置').fontSize(17).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+            Column({ space: 12 }) {
+              Column({ space: 6 }) {
+                Text('主机地址').fontSize(12).fontColor(COLOR_MUTED)
+                TextInput({ text: this.settingsHost, placeholder: '例如: 192.168.1.100' })
+                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .padding({ left: 16, right: 16 }).onChange((v: string) => { this.settingsHost = v; })
+              }
 
-          Column({ space: 0 }) {
-            Column() {
-              Text('主机地址').fontSize(13).fontColor('#666666').margin({ bottom: 6 })
-              TextInput({ text: this.settingsHost, placeholder: '例如: 192.168.1.100' })
-                .height(44).fontSize(15).backgroundColor('#F5F5F5').borderRadius(10)
-                .padding({ left: 14, right: 14 }).onChange((v: string) => { this.settingsHost = v; })
-            }.margin({ left: 20, right: 20, bottom: 12 })
+              Column({ space: 6 }) {
+                Text('端口').fontSize(12).fontColor(COLOR_MUTED)
+                TextInput({ text: this.settingsPort, placeholder: '默认: 5005' })
+                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .padding({ left: 16, right: 16 }).type(InputType.Number)
+                  .onChange((v: string) => { this.settingsPort = v; })
+              }
 
-            Column() {
-              Text('端口').fontSize(13).fontColor('#666666').margin({ bottom: 6 })
-              TextInput({ text: this.settingsPort, placeholder: '默认: 5005' })
-                .height(44).fontSize(15).backgroundColor('#F5F5F5').borderRadius(10)
-                .padding({ left: 14, right: 14 }).type(InputType.Number)
-                .onChange((v: string) => { this.settingsPort = v; })
-            }.margin({ left: 20, right: 20, bottom: 12 })
+              Column({ space: 6 }) {
+                Text('WebDAV 路径').fontSize(12).fontColor(COLOR_MUTED)
+                TextInput({ text: this.settingsPath, placeholder: '例如: /photo/' })
+                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .padding({ left: 16, right: 16 }).onChange((v: string) => { this.settingsPath = v; })
+              }
+            }
+          }.width('100%').padding(18).backgroundColor(COLOR_SURFACE).borderRadius(22)
+            .shadow({ radius: 20, color: '#120A59F7', offsetX: 0, offsetY: 8 })
 
-            Column() {
-              Text('WebDAV 路径').fontSize(13).fontColor('#666666').margin({ bottom: 6 })
-              TextInput({ text: this.settingsPath, placeholder: '例如: /photo/' })
-                .height(44).fontSize(15).backgroundColor('#F5F5F5').borderRadius(10)
-                .padding({ left: 14, right: 14 }).onChange((v: string) => { this.settingsPath = v; })
-            }.margin({ left: 20, right: 20, bottom: 18 })
+          Column({ space: 14 }) {
+            Text('认证信息').fontSize(17).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+            Column({ space: 12 }) {
+              Column({ space: 6 }) {
+                Text('用户名').fontSize(12).fontColor(COLOR_MUTED)
+                TextInput({ text: this.settingsUser, placeholder: 'WebDAV 用户名' })
+                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .padding({ left: 16, right: 16 }).onChange((v: string) => { this.settingsUser = v; })
+              }
 
-            Divider().margin({ left: 24, right: 24 })
+              Column({ space: 6 }) {
+                Text('密码').fontSize(12).fontColor(COLOR_MUTED)
+                Row({ space: 8 }) {
+                  TextInput({ text: this.settingsPass, placeholder: '留空则保持当前密码不变' })
+                    .layoutWeight(1).height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                    .padding({ left: 16, right: 16 }).type(this.settingsShowPass ? InputType.Normal : InputType.Password)
+                    .onChange((v: string) => { this.settingsPass = v; })
+                  Button(this.settingsShowPass ? '隐藏' : '显示').height(48).fontSize(13).fontColor(COLOR_TEXT)
+                    .backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(14).padding({ left: 14, right: 14 })
+                    .onClick(() => { this.settingsShowPass = !this.settingsShowPass; })
+                }.alignItems(VerticalAlign.Center)
+              }
 
-            Text('认证信息').fontSize(17).fontWeight(FontWeight.Bold).fontColor('#333333')
-              .width('100%').padding({ left: 0, top: 16, bottom: 14 })
+              Text('留空则保持当前密码不变').fontSize(11).fontColor(COLOR_MUTED)
+            }
+          }.width('100%').padding(18).backgroundColor(COLOR_SURFACE).borderRadius(22)
+            .shadow({ radius: 20, color: '#120A59F7', offsetX: 0, offsetY: 8 })
 
-            Column() {
-              Text('用户名').fontSize(13).fontColor('#666666').margin({ bottom: 6 })
-              TextInput({ text: this.settingsUser, placeholder: 'WebDAV 用户名' })
-                .height(44).fontSize(15).backgroundColor('#F5F5F5').borderRadius(10)
-                .padding({ left: 14, right: 14 }).onChange((v: string) => { this.settingsUser = v; })
-            }.margin({ left: 20, right: 20, bottom: 12 })
-
-            Column() {
-              Text('密码').fontSize(13).fontColor('#666666').margin({ bottom: 6 })
+          Column({ space: 14 }) {
+            Text('上传设置').fontSize(17).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+            Column({ space: 12 }) {
               Row() {
-                TextInput({ text: this.settingsPass, placeholder: '留空则保持当前密码不变' })
-                  .layoutWeight(1).height(44).fontSize(15).backgroundColor('#F5F5F5').borderRadius(10)
-                  .padding({ left: 14, right: 14 }).type(this.settingsShowPass ? InputType.Normal : InputType.Password)
-                  .onChange((v: string) => { this.settingsPass = v; })
-                Button(this.settingsShowPass ? '\u{1F440}' : '\u{1F441}').width(44).height(44).fontSize(16)
-                  .backgroundColor('#EEEEEE').borderRadius(10).onClick(() => { this.settingsShowPass = !this.settingsShowPass; })
-              }.alignItems(VerticalAlign.Center)
-            }.margin({ left: 20, right: 20, bottom: 8 })
+                Column({ space: 4 }) {
+                  Text('自动上传').fontSize(15).fontColor(COLOR_TEXT)
+                  Text('拍照后直接上传到 NAS').fontSize(12).fontColor(COLOR_MUTED)
+                }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+                Toggle({ type: ToggleType.Switch, isOn: this.autoUpload })
+                  .onChange((isOn: boolean) => { this.autoUpload = isOn; })
+              }.padding({ top: 4, bottom: 4 }).justifyContent(FlexAlign.SpaceBetween)
 
-            Text('留空则保持当前密码不变').fontSize(11).fontColor('#AAAAAA').margin({ left: 20, bottom: 20 })
+              Row() {
+                Column({ space: 4 }) {
+                  Text('自动删除相册照片').fontSize(15).fontColor(COLOR_TEXT)
+                  Text('上传后自动尝试清理系统相册中的新照片').fontSize(12).fontColor(COLOR_MUTED)
+                }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+                Toggle({ type: ToggleType.Switch, isOn: this.autoDeleteAlbumPhoto })
+                  .onChange((isOn: boolean) => { this.autoDeleteAlbumPhoto = isOn; })
+              }.padding({ top: 4, bottom: 4 }).justifyContent(FlexAlign.SpaceBetween)
+            }
+          }.width('100%').padding(18).backgroundColor(COLOR_SURFACE).borderRadius(22)
+            .shadow({ radius: 20, color: '#120A59F7', offsetX: 0, offsetY: 8 })
 
-            Divider().margin({ left: 24, right: 24 })
-
-            Text('上传设置').fontSize(17).fontWeight(FontWeight.Bold).fontColor('#333333')
-              .width('100%').padding({ left: 0, top: 16, bottom: 14 })
-
-            Row() {
-              Column() {
-                Text('自动上传').fontSize(15).fontColor('#333333')
-                Text('拍照后自动上传至NAS，无需手动确认').fontSize(12).fontColor('#888888').margin({ top: 3 })
-              }.layoutWeight(1).alignItems(HorizontalAlign.Start)
-              Toggle({ type: ToggleType.Switch, isOn: this.autoUpload })
-                .onChange((isOn: boolean) => { this.autoUpload = isOn; })
-            }.width('100%').padding({ left: 20, right: 20, bottom: 20 }).justifyContent(FlexAlign.SpaceBetween)
-
-            Row() {
-              Column() {
-                Text('自动删除相册照片').fontSize(15).fontColor('#333333')
-                Text('上传成功后自动尝试删除系统相册中的新照片').fontSize(12).fontColor('#888888').margin({ top: 3 })
-              }.layoutWeight(1).alignItems(HorizontalAlign.Start)
-              Toggle({ type: ToggleType.Switch, isOn: this.autoDeleteAlbumPhoto })
-                .onChange((isOn: boolean) => { this.autoDeleteAlbumPhoto = isOn; })
-            }.width('100%').padding({ left: 20, right: 20, bottom: 20 }).justifyContent(FlexAlign.SpaceBetween)
-          }.width('100%')
-
-          Divider().margin({ left: 24, right: 24 })
-
-          Row({ space: 14 }) {
-            Button('恢复默认').layoutWeight(1).height(44).fontSize(14).type(ButtonType.Normal)
-              .borderRadius(22).backgroundColor('#FFF0F0').fontColor('#CC0000')
+          Row({ space: 12 }) {
+            Button('恢复默认').layoutWeight(1).height(46).fontSize(14).fontColor(COLOR_DANGER)
+              .backgroundColor(COLOR_DANGER_SOFT).borderRadius(23)
               .onClick(() => this.resetSettingsToDefault())
-            Button('保存配置').layoutWeight(1).height(44).fontSize(15).fontColor('#FFFFFF')
-              .backgroundColor('#007DFF').borderRadius(22).enabled(!this.settingsIsSaving)
+            Button('保存配置').layoutWeight(1).height(46).fontSize(15).fontColor(COLOR_SURFACE)
+              .backgroundColor(COLOR_PRIMARY).borderRadius(23).enabled(!this.settingsIsSaving)
               .scale({ x: this.settingsSaveScale, y: this.settingsSaveScale })
               .onClick(() => this.saveSettingsConfig())
-          }.width('100%').padding({ left: 20, right: 20, top: 10, bottom: 30 })
+          }.width('100%').padding({ bottom: 12 })
 
-          Column() {
-            Text('\u{1F4A1} 提示').fontSize(13).fontWeight(FontWeight.Medium).fontColor('#007DFF').margin({ bottom: 8 })
-            Text('修改配置后需要返回主页面重新加载文件列表').fontSize(12).fontColor('#999999')
-              .textAlign(TextAlign.Center).lineHeight(18)
-            Text('支持飞牛(fnOS)、群晖等 WebDAV 协议的 NAS 设备').fontSize(12).fontColor('#BBBBBB')
-              .textAlign(TextAlign.Center).lineHeight(18).margin({ top: 4 })
-          }.width('90%').padding(14).borderRadius(10).backgroundColor('#F7FBFF').margin({ bottom: 30 })
+          Column({ space: 6 }) {
+            Text('说明').fontSize(13).fontWeight(FontWeight.Medium).fontColor(COLOR_PRIMARY)
+            Text('修改配置后将重新使用新的 WebDAV 连接参数。').fontSize(12).fontColor(COLOR_MUTED).lineHeight(18)
+            Text('支持飞牛（fnOS）、群晖等提供 WebDAV 服务的 NAS。').fontSize(12).fontColor(COLOR_MUTED).lineHeight(18)
+          }.width('100%').padding(16).backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(18).margin({ bottom: 24 })
         }
-      }.width('100%').layoutWeight(1)
+      }.width('100%').layoutWeight(1).padding({ left: 20, right: 20 })
 
       if (this.settingsIsSaving) {
         Column() {
           LoadingProgress().width(40).height(40).color('#007DFF').margin({ bottom: 12 })
-          Text('保存中...').fontSize(14).fontColor('#888888')
-        }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+          Text('保存中...').fontSize(14).fontColor(COLOR_SURFACE)
+        }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
           .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(100)
       }
-    }.width('100%').height('100%').backgroundColor('#FAFAFA')
+    }.width('100%').height('100%').backgroundColor(COLOR_BG)
   }
 
   @Builder MainPageContent() {
-    Column() {
+    Column({ space: 16 }) {
       Row() {
-        Column() {
-          Text($r('app.string.title_main')).fontSize(19).fontWeight(FontWeight.Bold)
-          Text('NAS Photo Sync').fontSize(11).fontColor('#888888').margin({ top: 2 })
+        Column({ space: 6 }) {
+          Text($r('app.string.title_main')).fontSize(24).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+          Text('拍一张照片，自动同步到你的 NAS。').fontSize(12).fontColor(COLOR_MUTED)
         }.alignItems(HorizontalAlign.Start).layoutWeight(1)
-      }.width('100%').height(48).padding({ left: 16, right: 16 }).justifyContent(FlexAlign.SpaceBetween).alignItems(VerticalAlign.Center)
-      .margin({ top: this.statusBarHeight + 4 })
+      }.width('100%').padding({ left: 20, right: 20, top: this.statusBarHeight + 18 })
 
-      Button($r('app.string.btn_take_photo')).width('90%').height(50).fontSize(17)
-        .backgroundColor('#007DFF').fontColor('#FFFFFF').borderRadius(25)
-        .enabled(!this.isLoading).scale({ x: this.btnScale, y: this.btnScale })
-        .onClick(() => this.handleTakePhoto()).margin({ top: 12, bottom: 4 })
+      Column({ space: 14 }) {
+        Row() {
+          Column({ space: 4 }) {
+            Text('当前连接').fontSize(11).fontColor(COLOR_MUTED)
+            Text(
+              this.settingsHost !== ''
+                ? (this.settingsHost + ':' + this.settingsPort)
+                : '未配置 NAS'
+            ).fontSize(16).fontWeight(FontWeight.Medium).fontColor(COLOR_TEXT)
+          }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+          Text(this.autoUpload ? '自动上传已开启' : '手动确认上传').fontSize(11).fontColor(COLOR_PRIMARY)
+            .padding({ left: 10, right: 10, top: 6, bottom: 6 }).backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(12)
+        }
 
-      Text('📸 拍照后自动上传至NAS并清理本地文件').fontSize(11).fontColor('#999999')
-        .width('90%').textAlign(TextAlign.Center).margin({ bottom: 10 })
+        Text(this.settingsPath !== '' ? this.settingsPath : DEFAULT_NAS_CONFIG.path).fontSize(12).fontColor(COLOR_MUTED)
 
-      Divider().margin({ left: 20, right: 20 })
+        Button('立即拍照').width('100%').height(52).fontSize(17).fontWeight(FontWeight.Medium)
+          .backgroundColor(COLOR_PRIMARY).fontColor(COLOR_SURFACE).borderRadius(26)
+          .enabled(!this.isLoading).scale({ x: this.btnScale, y: this.btnScale })
+          .onClick(() => this.handleTakePhoto())
+      }.width('100%').padding(20).backgroundColor(COLOR_SURFACE).borderRadius(26)
+        .shadow({ radius: 24, color: '#180A59F7', offsetX: 0, offsetY: 10 })
+        .margin({ left: 20, right: 20 })
 
       Row() {
-        Text('NAS 图片').fontSize(15).fontWeight(FontWeight.Medium).layoutWeight(1)
-        Button(this.isRefreshing ? '刷新中...' : '🔄 刷新').type(ButtonType.Normal).height(32).fontSize(12).fontColor('#007DFF')
-          .borderRadius(16).enabled(!this.isRefreshing).onClick(() => this.loadNasFiles())
-      }.width('100%').padding({ left: 16, right: 16 }).height(40).alignItems(VerticalAlign.Center).margin({ top: 8, bottom: 6 })
+        Column({ space: 2 }) {
+          Text('NAS 图片').fontSize(18).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+          Text('长按图片可删除，点击可预览').fontSize(11).fontColor(COLOR_MUTED)
+        }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+        Button(this.isRefreshing ? '刷新中' : '刷新').type(ButtonType.Normal).height(34).fontSize(12).fontColor(COLOR_PRIMARY)
+          .backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(17).enabled(!this.isRefreshing).padding({ left: 14, right: 14 })
+          .onClick(() => this.loadNasFiles())
+      }.width('100%').padding({ left: 20, right: 20 }).alignItems(VerticalAlign.Center)
 
       if (this.nasError !== '') {
         Row() {
-          Text('⚠ ').fontSize(13).fontColor('#CC3300')
-          Text(this.nasError).fontSize(12).fontColor('#CC3300').layoutWeight(1)
-        }.width('92%').padding(10).borderRadius(8).backgroundColor('#FFF5F5').margin({ bottom: 6 })
+          Text('⚠').fontSize(14).fontColor(COLOR_DANGER).margin({ right: 8 })
+          Text(this.nasError).fontSize(12).fontColor(COLOR_DANGER).layoutWeight(1)
+        }.width('100%').padding(14).borderRadius(18).backgroundColor(COLOR_DANGER_SOFT).margin({ left: 20, right: 20 })
       }
 
       if (this.nasFiles.length > 0) {
@@ -1720,35 +1749,37 @@ struct Index {
                 Text(file.name).fontSize(10).maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
                   .width('100%').margin({ top: 3 })
                 Text(formatFileSize(file.size)).fontSize(9).fontColor('#999999')
-              }.width('100%').padding(5).onClick(() => this.previewImage(file.name))
-              .borderRadius(8).backgroundColor('#FAFAFA')
+              }.width('100%').padding(8).onClick(() => this.previewImage(file.name))
+              .borderRadius(18).backgroundColor(COLOR_SURFACE)
               .scale({ x: this.longPressedItem === file.name ? 0.95 : 1.0, y: this.longPressedItem === file.name ? 0.95 : 1.0 })
               .opacity(this.longPressedItem === file.name ? 0.7 : 1.0)
+              .shadow({ radius: 14, color: '#120A59F7', offsetX: 0, offsetY: 6 })
               .gesture(
                 LongPressGesture({ repeat: false, duration: 300 })
                   .onAction((event?: GestureEvent) => { this.onLongPressFile(file.name); })
               )
             }
           }, (file: NasFile) => file.name)
-        }.columnsTemplate('1fr 1fr 1fr').width('94%').layoutWeight(1)
-          .padding(6).scrollBar(BarState.Auto).margin({ top: 4, bottom: 4 })
+        }.columnsTemplate('1fr 1fr 1fr').width('100%').layoutWeight(1)
+          .padding({ left: 20, right: 20, top: 4, bottom: 8 }).scrollBar(BarState.Auto)
       }
 
       if (this.nasFiles.length === 0 && !this.isLoading && this.nasError === '') {
         Column() {
-          Text('📂').fontSize(38).margin({ bottom: 10 })
-          Text($r('app.string.empty_file_list')).fontSize(13).fontColor('#BBBBBB')
-        }.width('100%').layoutWeight(1).justifyContent(FlexAlign.Center).margin({ top: 30 })
+          Text('图片会在这里出现').fontSize(16).fontWeight(FontWeight.Medium).fontColor(COLOR_TEXT).margin({ bottom: 8 })
+          Text($r('app.string.empty_file_list')).fontSize(12).fontColor(COLOR_MUTED)
+        }.width('100%').layoutWeight(1).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
+          .padding({ left: 20, right: 20 })
       }
-    }.width('100%').height('100%')
-    .padding({ bottom: 8 })
+    }.width('100%').height('100%').backgroundColor(COLOR_BG)
+      .padding({ bottom: 8 })
   }
 
   @Builder LoadingOverlay() {
     Column() {
       LoadingProgress().width(48).height(48).color('#007DFF').margin({ bottom: 16 })
-      Text(this.loadingText).fontSize(15).fontColor('#555555')
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+      Text(this.loadingText).fontSize(15).fontColor(COLOR_SURFACE)
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(100)
   }
 
@@ -1768,7 +1799,7 @@ struct Index {
         }.width('100%')
       }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
         .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(120)
   }
 
@@ -1785,15 +1816,15 @@ struct Index {
         }.width('100%')
       }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
         .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(120)
   }
 
   @Builder DeletingOverlay() {
     Column() {
       LoadingProgress().width(48).height(48).color('#CC0000').margin({ bottom: 16 })
-      Text('正在删除...').fontSize(15).fontColor('#555555')
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+      Text('正在删除...').fontSize(15).fontColor(COLOR_SURFACE)
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(100)
   }
 
@@ -1805,9 +1836,10 @@ struct Index {
         .onError((err: ImageError) => { hilog.error(0x0000, 'Viewer', '%{public}s', '查看大图失败: ' + this.selectedImage); })
       Column({ space: 12 }) {
         Text(this.selectedImage).fontSize(13).fontColor('#FFFFFF').maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
-          .width(160).textAlign(TextAlign.Center)
-        Text(formatFileSize(this.getSelectedSize())).fontSize(12).fontColor('#CCCCCC')
-      }.position({ bottom: this.navBarHeight + 24 }).alignItems(HorizontalAlign.Center)
+          .width(200).textAlign(TextAlign.Center)
+        Text(formatFileSize(this.getSelectedSize())).fontSize(12).fontColor('#D8E0EA')
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).backgroundColor('#660A1220').borderRadius(18)
+        .position({ bottom: this.navBarHeight + 24 }).alignItems(HorizontalAlign.Center)
     }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#E0000000')
       .visibility(this.viewerVisible ? Visibility.Visible : Visibility.Hidden)
       .onClick(() => this.closeViewer())
