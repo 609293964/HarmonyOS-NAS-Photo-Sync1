@@ -1,0 +1,12 @@
+{
+  "module": {
+    "name": "entry",
+    "signingConfigType": "debug"
+  },
+  "products": [
+    {
+      "name": "default",
+      "signingConfig": "default"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "modelVersion": "6.0.2",
+  "license": "ISC",
+  "devDependencies": {},
+  "name": "nas-photo-sync",
+  "ohos": {},
+  "overrides": {}
+}

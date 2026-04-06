@@ -1,0 +1,74 @@
+{
+  "HVIGOR_OHOS_PLUGIN": {
+    "MODULES": [
+      {
+        "MODULE_NAME": "923fe53966c6cd9343e11af776cd4b05be315ea4b200b02e4d5dfb0f929b73bf",
+        "API_TYPE": "stageMode",
+        "INCLUDE_IN_BUILD": true,
+        "IS_COMMAND_LINE_ENTRY_MODULE": true,
+        "MODULE_TYPE": "entry",
+        "INCREMENTAL_TASKS": {
+          "COMPILE_ARKTS": false
+        },
+        "IS_INCREMENTAL_MODULE": false
+      }
+    ],
+    "NATIVE_COMPILER": "Default",
+    "IS_FULL_BUILD": true,
+    "BUILD_MODE": "debug"
+  },
+  "HVIGOR": {
+    "IS_INCREMENTAL": true,
+    "IS_DAEMON": true,
+    "IS_PARALLEL": true,
+    "IS_HVIGORFILE_TYPE_CHECK": false,
+    "TASK_TIME": {
+      "923fe53966c6cd9343e11af776cd4b05be315ea4b200b02e4d5dfb0f929b73bf": {
+        "init": 245600,
+        "PreBuild": 75759100,
+        "CreateModuleInfo": 413500,
+        "GenerateMetadata": 2041100,
+        "ConfigureCmake": 212800,
+        "MergeProfile": 2403100,
+        "CreateBuildProfile": 1972200,
+        "PreCheckSyscap": 268400,
+        "GeneratePkgContextInfo": 2817200,
+        "ProcessIntegratedHsp": 338200,
+        "BuildNativeWithCmake": 145500,
+        "MakePackInfo": 1937500,
+        "SyscapTransform": 1138300,
+        "ProcessProfile": 50500400,
+        "ProcessRouterMap": 2806900,
+        "ProcessShareConfig": 1879400,
+        "ProcessStartupConfig": 841000,
+        "BuildNativeWithNinja": 863500,
+        "ProcessResource": 2629200,
+        "GenerateLoaderJson": 5701700,
+        "ProcessLibs": 2677600,
+        "CompileResource": 137362900,
+        "DoNativeStrip": 1618200,
+        "BuildJS": 1173500,
+        "CacheNativeLibs": 555550600
+      },
+      "APP": {
+        "init": 149000
+      }
+    },
+    "APIS": [
+      "getProperty"
+    ],
+    "CONFIG_EXPERIMENT": {
+      "ENABLE_MODULE_SKIP": false,
+      "ENABLE_CPP_FUNCTION_LEVEL_INCREMENTAL": false
+    },
+    "CONFIG_PROPERTIES": {},
+    "TOTAL_TIME": 4697098200,
+    "BUILD_ID": "202604061800185860",
+    "ERROR_MESSAGE": [
+      {
+        "CODE": "10505001",
+        "TIMESTAMP": "1775469623278"
+      }
+    ]
+  }
+}
