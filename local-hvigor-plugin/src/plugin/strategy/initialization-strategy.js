@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.InitializationStrategy=void 0;class InitializationStrategy{createModuleModel(e,t,i){const o=e.getModuleModelByName(t.getName());return o.moduleBuildProfileCheck(i),o.processTargetsConfig(),o}}exports.InitializationStrategy=InitializationStrategy;

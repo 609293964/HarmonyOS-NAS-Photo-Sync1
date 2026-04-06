@@ -1,1 +1,0 @@
-{"module": {"name": "common", "type": "shared", "description": "$string:common_module_desc", "deviceTypes": ["phone", "tablet"], "deliveryWithInstall": true, "installationFree": false}}

@@ -2,6 +2,7 @@ import fs from '@ohos.file.fs';
 import http from '@ohos.net.http';
 import socket from '@ohos.net.socket';
 import connection from '@ohos.net.connection';
+import abilityAccessCtrl, { Permissions, PermissionRequestResult } from '@ohos.abilityAccessCtrl';
 import hilog from '@ohos.hilog';
 import promptAction from '@ohos.promptAction';
 import preferences from '@ohos.data.preferences';
@@ -20,14 +21,17 @@ class NasStoredConfig {
   user: string = '';
   pass: string = '';
   auto_upload: boolean = false;
+  auto_delete_album_photo: boolean = true;
 
-  constructor(host: string = '', port: number = 5005, path: string = '/photo/', user: string = '', pass: string = '', autoUpload: boolean = false) {
+  constructor(host: string = '', port: number = 5005, path: string = '/photo/', user: string = '', pass: string = '', autoUpload: boolean = false,
+    autoDeleteAlbumPhoto: boolean = true) {
     this.host = host;
     this.port = port;
     this.path = path;
     this.user = user;
     this.pass = pass;
     this.auto_upload = autoUpload;
+    this.auto_delete_album_photo = autoDeleteAlbumPhoto;
   }
 }
 
@@ -108,7 +112,8 @@ function normalizeWebDavPath(path: string): string {
 }
 
 export class AppStorageHelper {
-  static async saveConfig(ctx: common.Context, host: string, port: number, path: string, user: string, pass: string, autoUpload: boolean): Promise<void> {
+  static async saveConfig(ctx: common.Context, host: string, port: number, path: string, user: string, pass: string, autoUpload: boolean,
+    autoDeleteAlbumPhoto: boolean): Promise<void> {
     try {
       const pref = await preferences.getPreferences(ctx, 'nas_config');
       await pref.put('webdav_host', host.trim());
@@ -117,10 +122,12 @@ export class AppStorageHelper {
       await pref.put('webdav_user', user.trim());
       await pref.put('webdav_pass', pass);
       await pref.put('auto_upload', autoUpload);
+      await pref.put('auto_delete_album_photo', autoDeleteAlbumPhoto);
       await pref.flush();
       hilog.info(0x0000, 'Config', '%{public}s', '配置已保存');
-    } catch {
-      hilog.error(0x0000, 'Config', '%{public}s', '保存配置失败');
+    } catch (e) {
+      hilog.error(0x0000, 'Config', '%{public}s', '保存配置失败: ' + (e instanceof Error ? e.message : String(e)));
+      throw (e instanceof Error ? e : new Error('保存配置失败'));
     }
   }
 
@@ -133,7 +140,8 @@ export class AppStorageHelper {
         normalizeWebDavPath((await pref.get('webdav_path', DEFAULT_NAS_CONFIG.path)) as string),
         ((await pref.get('webdav_user', DEFAULT_NAS_CONFIG.user)) as string).trim(),
         (await pref.get('webdav_pass', DEFAULT_NAS_CONFIG.pass)) as string,
-        (await pref.get('auto_upload', DEFAULT_NAS_CONFIG.auto_upload)) as boolean
+        (await pref.get('auto_upload', DEFAULT_NAS_CONFIG.auto_upload)) as boolean,
+        (await pref.get('auto_delete_album_photo', DEFAULT_NAS_CONFIG.auto_delete_album_photo)) as boolean
       );
     } catch {
       return new NasStoredConfig(
@@ -142,25 +150,12 @@ export class AppStorageHelper {
         DEFAULT_NAS_CONFIG.path,
         DEFAULT_NAS_CONFIG.user,
         DEFAULT_NAS_CONFIG.pass,
-        DEFAULT_NAS_CONFIG.auto_upload
+        DEFAULT_NAS_CONFIG.auto_upload,
+        DEFAULT_NAS_CONFIG.auto_delete_album_photo
       );
     }
   }
 
-  static async saveAutoUpload(ctx: common.Context, autoUpload: boolean): Promise<void> {
-    try {
-      const pref = await preferences.getPreferences(ctx, 'nas_config');
-      await pref.put('auto_upload', autoUpload);
-      await pref.flush();
-    } catch {}
-  }
-
-  static async loadAutoUpload(ctx: common.Context): Promise<boolean> {
-    try {
-      const pref = await preferences.getPreferences(ctx, 'nas_config');
-      return (await pref.get('auto_upload', false)) as boolean;
-    } catch { return false; }
-  }
 }
 
 export class NasConfig {
@@ -962,6 +957,7 @@ struct Index {
   @State settingsShowPass: boolean = false;
   @State settingsIsSaving: boolean = false;
   @State settingsSaveScale: number = 1.0;
+  @State autoDeleteAlbumPhoto: boolean = true;
   private capturedAssetUri: string = '';
 
   private cameraService: CameraService = new CameraService();
@@ -995,10 +991,17 @@ struct Index {
     }
   }
 
-  private async ensurePermissions(permissionList: Array<string>, failureLogLabel: string): Promise<boolean> {
+  private delay(ms: number): Promise<void> {
+    return new Promise<void>((resolve: () => void) => {
+      setTimeout(resolve, ms);
+    });
+  }
+
+  private async ensurePermissions(permissionList: Array<Permissions>, failureLogLabel: string): Promise<boolean> {
     try {
       const context: common.UIAbilityContext = this.getHostContext() as common.UIAbilityContext;
-      const result = await context.requestPermissionsFromUser(permissionList, 0);
+      const atManager = abilityAccessCtrl.createAtManager();
+      const result: PermissionRequestResult = await atManager.requestPermissionsFromUser(context, permissionList);
       if (!result.authResults || result.authResults.length !== permissionList.length) {
         return false;
       }
@@ -1026,6 +1029,14 @@ struct Index {
     if (this.capturedAssetUri === '') {
       return;
     }
+    if (!this.autoDeleteAlbumPhoto) {
+      hilog.info(0x0000, TAG, '%{public}s', '已关闭自动删除相册照片，跳过删除');
+      this.capturedAssetUri = '';
+      return;
+    }
+    // cameraPicker returns from a system UI extension. Give the system a moment to finish
+    // tearing down its modal/session before touching the media library again.
+    await this.delay(300);
     const hasDeletePermission: boolean = await this.ensurePhotoDeletePermission();
     if (!hasDeletePermission) {
       this.showToast('已上传，但未授予相册写权限，无法自动删除系统相册照片', 3500);
@@ -1046,10 +1057,6 @@ struct Index {
     const ctx: common.Context = this.getHostContext();
     NasConfig.initFromStorage(ctx).then(() => {
       this.thumbnailService.initCache(ctx).then(() => {
-        AppStorageHelper.loadAutoUpload(ctx).then((v: boolean) => { 
-          this.autoUpload = v; 
-          this.settingsIsSaving = false;
-        });
         this.loadSettingsConfig();
         this.loadNasFiles();
       });
@@ -1067,6 +1074,7 @@ struct Index {
       this.settingsPass = '';
       this.settingsShowPass = false;
       this.autoUpload = cfg.auto_upload;
+      this.autoDeleteAlbumPhoto = cfg.auto_delete_album_photo;
       hilog.info(0x0000, 'Settings', '%{public}s', '✅ 设置配置加载完成');
     } catch (e) {
       hilog.error(0x0000, 'Settings', '%{public}s', '❌ 加载设置失败: ' + (e instanceof Error ? e.message : String(e)));
@@ -1082,14 +1090,24 @@ struct Index {
       const ctx: common.Context = this.getHostContext();
       const nextPort: number = parseInt(this.settingsPort, 10) || DEFAULT_NAS_CONFIG.port;
       const nextPassword: string = this.settingsPass !== '' ? this.settingsPass : NasConfig.PASSWORD;
-      await AppStorageHelper.saveConfig(ctx, this.settingsHost, nextPort, this.settingsPath, this.settingsUser, nextPassword, this.autoUpload);
+      await AppStorageHelper.saveConfig(
+        ctx,
+        this.settingsHost,
+        nextPort,
+        this.settingsPath,
+        this.settingsUser,
+        nextPassword,
+        this.autoUpload,
+        this.autoDeleteAlbumPhoto
+      );
       NasConfig.applyConfig(new NasStoredConfig(
         this.settingsHost.trim(),
         nextPort,
         this.settingsPath,
         this.settingsUser.trim(),
         nextPassword,
-        this.autoUpload
+        this.autoUpload,
+        this.autoDeleteAlbumPhoto
       ));
       this.settingsHost = NasConfig.WEBDAV_HOST;
       this.settingsPort = String(NasConfig.WEBDAV_PORT);
@@ -1115,6 +1133,7 @@ struct Index {
     this.settingsUser = DEFAULT_NAS_CONFIG.user;
     this.settingsPass = DEFAULT_NAS_CONFIG.pass;
     this.settingsShowPass = false;
+    this.autoDeleteAlbumPhoto = DEFAULT_NAS_CONFIG.auto_delete_album_photo;
     this.showToast('已恢复默认值', 2000);
   }
 
@@ -1288,6 +1307,8 @@ struct Index {
       this.loadingText = '正在拍照...';
       const captureResult: CapturedPhotoResult | null = await this.cameraService.takePhoto(this.getHostContext());
       if (captureResult) {
+        // Avoid racing the system camera UI extension teardown with our own UI updates.
+        await this.delay(300);
         this.photoPath = captureResult.localPath;
         this.capturedAssetUri = captureResult.assetUri;
         hilog.info(0x0000, 'Camera', '%{public}s', '拍照成功，本地路径: ' + this.photoPath);
@@ -1573,6 +1594,15 @@ struct Index {
               }.layoutWeight(1).alignItems(HorizontalAlign.Start)
               Toggle({ type: ToggleType.Switch, isOn: this.autoUpload })
                 .onChange((isOn: boolean) => { this.autoUpload = isOn; })
+            }.width('100%').padding({ left: 20, right: 20, bottom: 20 }).justifyContent(FlexAlign.SpaceBetween)
+
+            Row() {
+              Column() {
+                Text('自动删除相册照片').fontSize(15).fontColor('#333333')
+                Text('上传成功后自动尝试删除系统相册中的新照片').fontSize(12).fontColor('#888888').margin({ top: 3 })
+              }.layoutWeight(1).alignItems(HorizontalAlign.Start)
+              Toggle({ type: ToggleType.Switch, isOn: this.autoDeleteAlbumPhoto })
+                .onChange((isOn: boolean) => { this.autoDeleteAlbumPhoto = isOn; })
             }.width('100%').padding({ left: 20, right: 20, bottom: 20 }).justifyContent(FlexAlign.SpaceBetween)
           }.width('100%')
 

@@ -19,13 +19,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\lishi\\.ohos\\config\\default_HarmonyOS-NAS-Photo-Sync_iG2MT3t0v9edwv8yHJY7pJoDE29yb8qJh44syKHE6ow=.cer",
+          "certpath": "",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B477D7A611A6D38EA6F14AB2D814046104C5437CA06105AB4189D8599BE2B93AB4F1711C1A35181",
-          "profile": "C:\\Users\\lishi\\.ohos\\config\\default_HarmonyOS-NAS-Photo-Sync_iG2MT3t0v9edwv8yHJY7pJoDE29yb8qJh44syKHE6ow=.p7b",
+          "keyPassword": "",
+          "profile": "",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\lishi\\.ohos\\config\\default_HarmonyOS-NAS-Photo-Sync_iG2MT3t0v9edwv8yHJY7pJoDE29yb8qJh44syKHE6ow=.p12",
-          "storePassword": "0000001BA6454B57FF3256EA5DC022F97221F8CE0B60CC6B61E04736B2718EF4DC4906DED5B94EE7CAD17A"
+          "storeFile": "",
+          "storePassword": ""
         }
       }
     ]

@@ -1,0 +1,13 @@
+.hvigor/
+.idea/
+entry/build/
+AppScope/build/
+common/build/
+build/
+tools/openharmony-toolchains-fixed/
+local-hvigor-plugin/
+local.properties
+*.log
+*.tmp
+*.user
+*.cache

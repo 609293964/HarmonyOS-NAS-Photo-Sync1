@@ -1,1 +1,0 @@
-"use strict";Object.defineProperty(exports,"__esModule",{value:!0}),exports.tracePac=void 0;const ohos_trace_js_1=require("../../common/trace/ohos-trace.js");function tracePac(e){ohos_trace_js_1.ohosTrace.traceIsUsePacJson(e)}exports.tracePac=tracePac;
