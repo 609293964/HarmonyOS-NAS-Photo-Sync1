@@ -550,9 +550,6 @@ export function formatFileSize(bytes: number): string {
   else { return (bytes / 1048576).toFixed(1) + ' MB'; }
 }
 
-const APP_EMOJIS: string[] = ['\u{1F4F8}', '\u{1F4F7}', '\u{1F3A8}', '\u{1F4BC}', '\u{1F30F}', '\u{2600}\uFE0F', '\u{2728}', '\u{1F4DD}'];
-function getRandomAppEmoji(): string { return APP_EMOJIS[Math.floor(Math.random() * APP_EMOJIS.length)]; }
-
 class RawHttpResponse {
   statusCode: number = 0;
   statusMessage: string = '';
@@ -693,7 +690,7 @@ async function checkNetworkConnection(): Promise<boolean> {
 export class CameraService {
   private buildCapturePath(context: common.Context): string {
     const baseDir: string = context.cacheDir !== '' ? context.cacheDir : (context.tempDir !== '' ? context.tempDir : '/data/storage/el2/base/cache/');
-    const fileName: string = 'temp_photo_' + String(Date.now()) + '_' + String(Math.floor(Math.random() * 900000) + 100000) + '.jpg';
+    const fileName: string = String(Math.floor(Math.random() * 90000) + 10000) + '.jpg';
     return baseDir + '/' + fileName;
   }
 
@@ -925,7 +922,6 @@ export class WebDavListService {
 @Entry
 @Component
 struct Index {
-  private readonly appEmoji: string = getRandomAppEmoji();
   @State photoPath: string = '';
   @State isLoading: boolean = false;
   @State loadingText: string = '';
@@ -934,9 +930,9 @@ struct Index {
   @State isRefreshing: boolean = false;
   @State btnScale: number = 1.0;
   @State fileListOpacity: number = 1.0;
-  @State thumbMode: boolean = true;
   @State thumbPaths: Map<string, string> = new Map<string, string>();
   @State autoUpload: boolean = false;
+  @State showUploadConfirmDialog: boolean = false;
   @State showDeleteDialog: boolean = false;
   @State fileToDelete: string = '';
   @State isDeleting: boolean = false;
@@ -1050,6 +1046,21 @@ struct Index {
       hilog.warn(0x0000, TAG, '%{public}s', '删除系统相册照片失败: ' + (e instanceof Error ? e.message : String(e)));
       this.showToast('已上传，但自动删除相册照片失败', 3000);
     }
+  }
+
+  private confirmUpload(): void {
+    this.showUploadConfirmDialog = false;
+    if (this.photoPath === '') {
+      return;
+    }
+    this.uploadAndClean();
+  }
+
+  private cancelUpload(): void {
+    this.showUploadConfirmDialog = false;
+    this.photoPath = '';
+    this.capturedAssetUri = '';
+    this.showToast('已取消上传', 2000);
   }
 
   aboutToAppear(): void {
@@ -1312,8 +1323,12 @@ struct Index {
         this.photoPath = captureResult.localPath;
         this.capturedAssetUri = captureResult.assetUri;
         hilog.info(0x0000, 'Camera', '%{public}s', '拍照成功，本地路径: ' + this.photoPath);
-        this.showToast('拍照成功，正在上传...', 2000);
-        await this.uploadAndClean();
+        if (this.autoUpload) {
+          this.showToast('拍照成功，正在上传...', 2000);
+          await this.uploadAndClean();
+        } else {
+          this.showUploadConfirmDialog = true;
+        }
       } else {
         this.capturedAssetUri = '';
         this.showToast('已取消拍照', 1500);
@@ -1370,31 +1385,11 @@ struct Index {
         hilog.warn(0x0000, 'Clean', '%{public}s', '⚠️ 临时照片文件不存在: ' + this.photoPath);
       }
 
-      const dir: string = this.photoPath.substring(0, this.photoPath.lastIndexOf('/'));
-      if (dir && fs.accessSync(dir)) {
-        try {
-          const files: string[] = await fs.listFile(dir);
-          const tempFiles: string[] = files.filter((f: string) => f.startsWith('temp_photo_'));
-          for (const tf of tempFiles) {
-            try {
-              fs.unlinkSync(dir + '/' + tf);
-              hilog.debug(0x0000, 'Clean', '%{public}s', '🧹 清理旧临时文件: ' + tf);
-            } catch {}
-          }
-        } catch {}
-      }
-
       this.showToast('✅ 上传成功！本地已清理', 2500);
     } catch (e) {
       hilog.error(0x0000, 'Clean', '%{public}s', '❌ 删除失败: ' + (e instanceof Error ? e.message : String(e)));
       this.showToast('上传成功（清理失败）', 3000);
     }
-  }
-
-  toggleThumbMode(): void {
-    this.thumbMode = !this.thumbMode;
-    this.runAnimation({ duration: 250, curve: Curve.EaseInOut }, () => { this.fileListOpacity = 0.5; });
-    setTimeout(() => { this.runAnimation({ duration: 200 }, () => { this.fileListOpacity = 1; }); }, 250);
   }
 
   onLongPressFile(fileName: string): void {
@@ -1499,6 +1494,7 @@ struct Index {
         this.currentTab = index;
       })
 
+      if (this.showUploadConfirmDialog) { this.UploadConfirmDialog() }
       if (this.showDeleteDialog) { this.DeleteConfirmDialog() }
       if (this.isLoading) { this.LoadingOverlay() }
       if (this.isDeleting) { this.DeletingOverlay() }
@@ -1641,7 +1637,6 @@ struct Index {
   @Builder MainPageContent() {
     Column() {
       Row() {
-        Text(this.appEmoji).fontSize(26).margin({ right: 8 })
         Column() {
           Text($r('app.string.title_main')).fontSize(19).fontWeight(FontWeight.Bold)
           Text('NAS Photo Sync').fontSize(11).fontColor('#888888').margin({ top: 2 })
@@ -1657,15 +1652,10 @@ struct Index {
       Text('📸 拍照后自动上传至NAS并清理本地文件').fontSize(11).fontColor('#999999')
         .width('90%').textAlign(TextAlign.Center).margin({ bottom: 10 })
 
-      Row({ space: 10 }) {
-        Button(this.thumbMode ? '📋 列表' : '🖼️ 网格').layoutWeight(1).height(42).fontSize(13).type(ButtonType.Normal)
-          .borderRadius(21).onClick(() => this.toggleThumbMode())
-      }.width('90%').margin({ bottom: 14 })
-
       Divider().margin({ left: 20, right: 20 })
 
       Row() {
-        Text('NAS 文件列表').fontSize(15).fontWeight(FontWeight.Medium).layoutWeight(1)
+        Text('NAS 图片').fontSize(15).fontWeight(FontWeight.Medium).layoutWeight(1)
         Button(this.isRefreshing ? '刷新中...' : '🔄 刷新').type(ButtonType.Normal).height(32).fontSize(12).fontColor('#007DFF')
           .borderRadius(16).enabled(!this.isRefreshing).onClick(() => this.loadNasFiles())
       }.width('100%').padding({ left: 16, right: 16 }).height(40).alignItems(VerticalAlign.Center).margin({ top: 8, bottom: 6 })
@@ -1677,7 +1667,7 @@ struct Index {
         }.width('92%').padding(10).borderRadius(8).backgroundColor('#FFF5F5').margin({ bottom: 6 })
       }
 
-      if (this.thumbMode && this.nasFiles.length > 0) {
+      if (this.nasFiles.length > 0) {
         Grid() {
           ForEach(this.nasFiles.filter((f: NasFile) => !f.isDirectory), (file: NasFile) => {
             GridItem() {
@@ -1742,25 +1732,6 @@ struct Index {
           }, (file: NasFile) => file.name)
         }.columnsTemplate('1fr 1fr 1fr').width('94%').layoutWeight(1)
           .padding(6).scrollBar(BarState.Auto).margin({ top: 4, bottom: 4 })
-      } else {
-        List({ space: 6 }) {
-          ForEach(this.nasFiles, (file: NasFile) => {
-            ListItem() {
-              Row() {
-                Text(file.isDirectory ? '📁' : '🖼️').fontSize(22).width(24).height(24).margin({ right: 8 })
-                Text(file.name).fontSize(13).layoutWeight(1).maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
-                if (!file.isDirectory) { Text(formatFileSize(file.size)).fontSize(11).fontColor('#888888').margin({ left: 4 }) }
-              }.width('100%').padding({ left: 12, right: 12, top: 8, bottom: 8 })
-              .borderRadius(8).backgroundColor('#F5F5F5')
-              .scale({ x: this.longPressedItem === file.name ? 0.98 : 1.0, y: this.longPressedItem === file.name ? 0.98 : 1.0 })
-              .opacity(this.longPressedItem === file.name ? 0.7 : 1.0)
-              .gesture(
-                LongPressGesture({ repeat: false, duration: 300 })
-                  .onAction((event?: GestureEvent) => { this.onLongPressFile(file.name); })
-              )
-            }
-          }, (file: NasFile) => file.name)
-        }.width('94%').height(300).padding(4).opacity(this.fileListOpacity)
       }
 
       if (this.nasFiles.length === 0 && !this.isLoading && this.nasError === '') {
@@ -1783,19 +1754,39 @@ struct Index {
 
   @Builder DeleteConfirmDialog() {
     Column() {
-      Text('🗑️ 确认删除').fontSize(19).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-      Text('确定要删除以下文件吗？\n此操作不可恢复！').fontSize(14).fontColor('#555555').textAlign(TextAlign.Center).margin({ bottom: 12 })
-      Text(this.fileToDelete).fontSize(13).fontColor('#CC0000').fontWeight(FontWeight.Medium)
-        .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Center)
-        .width('90%').backgroundColor('#FFF5F5').padding(10).borderRadius(8).margin({ bottom: 24 })
-      Row({ space: 14 }) {
-        Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor('#E8E8E8').fontColor('#333333').borderRadius(21)
-          .onClick(() => this.cancelDelete())
-        Button('🗑️ 删除').layoutWeight(1).height(42).fontSize(15).backgroundColor('#CC0000').fontColor('#FFFFFF').borderRadius(21)
-          .onClick(() => this.confirmDelete())
-      }.width('100%')
-    }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
-      .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
+      Column() {
+        Text('🗑️ 确认删除').fontSize(19).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+        Text('确定要删除以下文件吗？\n此操作不可恢复！').fontSize(14).fontColor('#555555').textAlign(TextAlign.Center).margin({ bottom: 12 })
+        Text(this.fileToDelete).fontSize(13).fontColor('#CC0000').fontWeight(FontWeight.Medium)
+          .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Center)
+          .width('90%').backgroundColor('#FFF5F5').padding(10).borderRadius(8).margin({ bottom: 24 })
+        Row({ space: 14 }) {
+          Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor('#E8E8E8').fontColor('#333333').borderRadius(21)
+            .onClick(() => this.cancelDelete())
+          Button('🗑️ 删除').layoutWeight(1).height(42).fontSize(15).backgroundColor('#CC0000').fontColor('#FFFFFF').borderRadius(21)
+            .onClick(() => this.confirmDelete())
+        }.width('100%')
+      }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
+        .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+      .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(120)
+  }
+
+  @Builder UploadConfirmDialog() {
+    Column() {
+      Column() {
+        Text('确认上传').fontSize(19).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
+        Text('是否确认将刚拍摄的照片上传到 NAS？').fontSize(14).fontColor('#555555').textAlign(TextAlign.Center).margin({ bottom: 20 })
+        Row({ space: 14 }) {
+          Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor('#E8E8E8').fontColor('#333333').borderRadius(21)
+            .onClick(() => this.cancelUpload())
+          Button('上传').layoutWeight(1).height(42).fontSize(15).backgroundColor('#007DFF').fontColor('#FFFFFF').borderRadius(21)
+            .onClick(() => this.confirmUpload())
+        }.width('100%')
+      }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
+        .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#90000000')
+      .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(120)
   }
 
   @Builder DeletingOverlay() {
@@ -1807,20 +1798,19 @@ struct Index {
   }
 
   @Builder ImageViewerBuilder() {
-    Stack({ alignContent: Alignment.TopEnd }) {
+    Stack({ alignContent: Alignment.Center }) {
       Image(this.selectedImagePath).objectFit(ImageFit.Contain)
         .width('100%').height('100%').backgroundColor('#000000')
         .onComplete(() => {})
         .onError((err: ImageError) => { hilog.error(0x0000, 'Viewer', '%{public}s', '查看大图失败: ' + this.selectedImage); })
       Column({ space: 12 }) {
-        Button('✕').width(36).height(36).fontSize(20).backgroundColor('#CC000000').fontColor('#FFFFFF').borderRadius(18)
-          .onClick(() => this.closeViewer())
         Text(this.selectedImage).fontSize(13).fontColor('#FFFFFF').maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
           .width(160).textAlign(TextAlign.Center)
         Text(formatFileSize(this.getSelectedSize())).fontSize(12).fontColor('#CCCCCC')
-      }.position({ right: 12, top: this.statusBarHeight + 12 }).alignItems(HorizontalAlign.End)
+      }.position({ bottom: this.navBarHeight + 24 }).alignItems(HorizontalAlign.Center)
     }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#E0000000')
       .visibility(this.viewerVisible ? Visibility.Visible : Visibility.Hidden)
+      .onClick(() => this.closeViewer())
   }
 
   getSelectedSize(): number {
