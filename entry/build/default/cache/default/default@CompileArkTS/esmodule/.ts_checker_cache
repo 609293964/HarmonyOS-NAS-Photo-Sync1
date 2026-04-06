@@ -1532,7 +1532,7 @@
       "error": false
     },
     "C:\\Users\\lishi\\Desktop\\0402\\HarmonyOS-NAS-Photo-Sync\\entry\\src\\main\\ets\\entryability\\EntryAbility.ts": {
-      "mtimeMs": 1775452382938.66,
+      "mtimeMs": 1775469714538.361,
       "children": [
         "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.app.ability.UIAbility.d.ts",
         "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.hilog.d.ts",
@@ -1540,10 +1540,7 @@
         "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.app.ability.Want.d.ts"
       ],
       "parent": [],
-      "error": true,
-      "errorCodes": [
-        28007
-      ]
+      "error": false
     },
     "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.file.fs.d.ts": {
       "mtimeMs": 1774582692000,
@@ -1660,7 +1657,7 @@
       "error": false
     },
     "C:\\Users\\lishi\\Desktop\\0402\\HarmonyOS-NAS-Photo-Sync\\entry\\src\\main\\ets\\pages\\Index.ets": {
-      "mtimeMs": 1775469561167.3872,
+      "mtimeMs": 1775469867371.925,
       "children": [
         "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.file.fs.d.ts",
         "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.net.http.d.ts",
@@ -1680,9 +1677,8 @@
       "parent": [],
       "error": true,
       "errorCodes": [
-        2307,
-        28040,
-        28007
+        29,
+        28040
       ]
     },
     "C:\\Program Files\\Huawei\\DevEco Studio\\sdk\\default\\openharmony\\ets\\api\\@ohos.util.stream.d.ts": {

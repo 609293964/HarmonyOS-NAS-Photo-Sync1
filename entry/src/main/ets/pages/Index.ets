@@ -2,8 +2,6 @@ import fs from '@ohos.file.fs';
 import http from '@ohos.net.http';
 import socket from '@ohos.net.socket';
 import connection from '@ohos.net.connection';
-import abilityAccessCtrl from '@ohos.abilityAccessCtrl';
-import { Permissions } from '@ohos.abilityAccessCtrl';
 import hilog from '@ohos.hilog';
 import promptAction from '@ohos.promptAction';
 import preferences from '@ohos.data.preferences';
@@ -997,12 +995,11 @@ struct Index {
     }
   }
 
-  private async ensurePermissions(permissionList: Array<Permissions>, failureLogLabel: string): Promise<boolean> {
+  private async ensurePermissions(permissionList: Array<string>, failureLogLabel: string): Promise<boolean> {
     try {
       const context: common.UIAbilityContext = this.getHostContext() as common.UIAbilityContext;
-      const atManager = abilityAccessCtrl.createAtManager();
-      const result = await atManager.requestPermissionsFromUser(context, permissionList) as abilityAccessCtrl.PermissionRequestResult;
-      if (result.authResults.length !== permissionList.length) {
+      const result = await context.requestPermissionsFromUser(permissionList, 0);
+      if (!result.authResults || result.authResults.length !== permissionList.length) {
         return false;
       }
       for (let i: number = 0; i < result.authResults.length; i++) {

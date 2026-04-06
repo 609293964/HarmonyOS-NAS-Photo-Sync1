@@ -19,8 +19,5 @@
   "updateVersionInfo": {},
   "customizedHar": false,
   "anBuildOutPut": "C:\\Users\\lishi\\Desktop\\0402\\HarmonyOS-NAS-Photo-Sync\\entry\\build\\default\\intermediates\\loader_out\\default\\an\\arm64-v8a",
-  "anBuildMode": "type",
-  "patchConfig": {
-    "changedFileList": "C:\\Users\\lishi\\Desktop\\0402\\HarmonyOS-NAS-Photo-Sync\\entry\\build\\default\\intermediates\\patch\\default\\changedFileList.json"
-  }
+  "anBuildMode": "type"
 }
