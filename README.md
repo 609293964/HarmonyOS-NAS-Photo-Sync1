@@ -1,6 +1,6 @@
 # HarmonyOS NAS Photo Sync
 
-基于 **HarmonyOS 6.0.2 (API 22)** 的原生 ArkTS 应用，用于将拍摄的照片通过 **WebDAV** 自动上传到 NAS，并在应用内浏览 NAS 目录中的图片文件。
+基于 **HarmonyOS 6.1.0 (API 23)** 的原生 ArkTS 应用，用于将拍摄的照片通过 **WebDAV** 自动上传到 NAS，并在应用内浏览 NAS 目录中的图片文件。
 
 ## 功能概览
 
@@ -14,8 +14,8 @@
 
 - ArkTS / ArkUI
 - Stage Model
-- HarmonyOS 6.0.2 (API 22)
-- Hvigor 6.22.4
+- HarmonyOS 6.1.0 (API 23)
+- Hvigor 6.23.4
 - WebDAV: `PROPFIND` + `PUT`
 
 ## 当前架构
@@ -59,13 +59,12 @@
 - `ohos.permission.CAMERA`
 - `ohos.permission.INTERNET`
 - `ohos.permission.GET_NETWORK_INFO`
-- `ohos.permission.READ_IMAGEVIDEO`
 - `ohos.permission.WRITE_IMAGEVIDEO`
 
 说明：
 
 - `CAMERA` 用于拍照
-- `READ/WRITE_IMAGEVIDEO` 主要用于读取系统拍照结果，以及在用户允许后尝试删除系统相册中的照片资源
+- `WRITE_IMAGEVIDEO` 仅在用户开启“自动删除相册照片”后，用于删除已上传的系统相册照片资源
 
 ## 拍照与删除行为说明
 
@@ -96,11 +95,12 @@
 推荐使用 **DevEco Studio**：
 
 1. 打开项目
-2. 等待索引完成
-3. 在 DevEco Studio 中配置签名，或选择自动生成签名
-4. `Build > Clean Project`
-5. `Build > Rebuild Project`
-6. 真机运行
+2. 在 `Tools > SDK Manager > SDK > HarmonyOS` 中确认 `6.1.0(23)` 的 `toolchains`、`ets`、`js`、`native`、`previewer` 组件已完整安装
+3. 等待索引完成
+4. 在 DevEco Studio 中配置签名，或选择自动生成签名
+5. `Build > Clean Project`
+6. `Build > Rebuild Project`
+7. 真机运行
 
 ## 签名与安全
 

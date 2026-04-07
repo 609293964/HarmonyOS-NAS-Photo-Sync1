@@ -1,11 +1,35 @@
+import AbilityConstant from '@ohos.app.ability.AbilityConstant';
+import ConfigurationConstant from '@ohos.app.ability.ConfigurationConstant';
 import UIAbility from '@ohos.app.ability.UIAbility';
 import hilog from '@ohos.hilog';
-import window from '@ohos.window';
 import Want from '@ohos.app.ability.Want';
+import window from '@ohos.window';
+import type { Configuration } from '@ohos.app.ability.Configuration';
 
 export default class EntryAbility extends UIAbility {
-  onCreate(want: Want, launchParam: Object) {
-    hilog.info(0x0000, 'EntryAbility', '%{public}s', 'Ability onCreate - want: ' + JSON.stringify(want ?? {}));
+  private currentWindowStage: window.WindowStage | null = null;
+
+  private async updateSystemBarStyle(windowStage: window.WindowStage, colorMode?: ConfigurationConstant.ColorMode): Promise<void> {
+    const activeColorMode: ConfigurationConstant.ColorMode | undefined = colorMode ?? this.context.config.colorMode;
+    const barContentColor: string = activeColorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? '#FFFFFF' : '#000000';
+    const navigationBarColor: string = activeColorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? '#08101B' : '#FAFAFA';
+    const windowInstance = await windowStage.getMainWindow();
+    await windowInstance.setWindowLayoutFullScreen(true);
+    await windowInstance.setWindowSystemBarProperties({
+      statusBarColor: '#00000000',
+      navigationBarColor: navigationBarColor,
+      statusBarContentColor: barContentColor,
+      navigationBarContentColor: barContentColor
+    });
+  }
+
+  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam) {
+    hilog.info(
+      0x0000,
+      'EntryAbility',
+      '%{public}s',
+      'Ability onCreate - want: ' + JSON.stringify(want ?? {}) + ', launchParam: ' + JSON.stringify(launchParam ?? {})
+    );
   }
 
   onDestroy() {
@@ -14,22 +38,14 @@ export default class EntryAbility extends UIAbility {
 
   async onWindowStageCreate(windowStage: window.WindowStage) {
     hilog.info(0x0000, 'EntryAbility', '%{public}s', 'Ability onWindowStageCreate - loading pages/Index');
-    
-    // 全局配置沉浸式效果
+    this.currentWindowStage = windowStage;
+
+    // 在 Ability 级别统一处理主窗口沉浸式配置，避免页面侧重复改写窗口状态。
     try {
-      const windowInstance = await windowStage.getMainWindow()
-      // 开启全屏布局，内容延伸到系统栏区域
-      await windowInstance.setWindowLayoutFullScreen(true)
-      // 设置系统栏完全透明
-      await windowInstance.setWindowSystemBarProperties({
-        statusBarColor: '#00000000',
-        navigationBarColor: '#00000000',
-        statusBarContentColor: '#000000', // 默认暗色文字，适合浅色背景
-        navigationBarContentColor: '#000000'
-      })
-      hilog.info(0x0000, 'EntryAbility', '%{public}s', '全局沉浸式配置成功')
+      await this.updateSystemBarStyle(windowStage);
+      hilog.info(0x0000, 'EntryAbility', '%{public}s', '全局沉浸式配置成功');
     } catch (error) {
-      hilog.error(0x0000, 'EntryAbility', '全局沉浸式配置失败: %{public}s', JSON.stringify(error))
+      hilog.error(0x0000, 'EntryAbility', '全局沉浸式配置失败: %{public}s', JSON.stringify(error));
     }
 
     windowStage.loadContent('pages/Index', (err) => {
@@ -42,7 +58,18 @@ export default class EntryAbility extends UIAbility {
   }
 
   onWindowStageDestroy() {
+    this.currentWindowStage = null;
     hilog.info(0x0000, 'EntryAbility', '%{public}s', 'Ability onWindowStageDestroy');
+  }
+
+  onConfigurationUpdate(newConfig: Configuration) {
+    try {
+      if (this.currentWindowStage) {
+        this.updateSystemBarStyle(this.currentWindowStage, newConfig.colorMode);
+      }
+    } catch (error) {
+      hilog.warn(0x0000, 'EntryAbility', '配置更新时同步系统栏样式失败: %{public}s', JSON.stringify(error));
+    }
   }
 
   onForeground() {

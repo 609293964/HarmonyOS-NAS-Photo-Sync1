@@ -3,6 +3,7 @@ import http from '@ohos.net.http';
 import socket from '@ohos.net.socket';
 import connection from '@ohos.net.connection';
 import abilityAccessCtrl, { Permissions, PermissionRequestResult } from '@ohos.abilityAccessCtrl';
+import ConfigurationConstant from '@ohos.app.ability.ConfigurationConstant';
 import hilog from '@ohos.hilog';
 import promptAction from '@ohos.promptAction';
 import preferences from '@ohos.data.preferences';
@@ -13,17 +14,147 @@ import camera from '@ohos.multimedia.camera';
 import photoAccessHelper from '@ohos.file.photoAccessHelper';
 
 const TAG: string = 'IndexPage';
-const COLOR_BG: string = '#F4F7FB';
-const COLOR_SURFACE: string = '#FFFFFF';
-const COLOR_SURFACE_ALT: string = '#F8FAFD';
-const COLOR_PRIMARY: string = '#0A59F7';
-const COLOR_PRIMARY_SOFT: string = '#EAF1FF';
-const COLOR_TEXT: string = '#18202A';
-const COLOR_MUTED: string = '#6F7A89';
-const COLOR_BORDER: string = '#E6EBF2';
-const COLOR_DANGER: string = '#D9485F';
-const COLOR_DANGER_SOFT: string = '#FFF1F3';
-const COLOR_OVERLAY: string = '#880A1220';
+const THEME_MODE_SYSTEM: string = 'system';
+const THEME_MODE_LIGHT: string = 'light';
+const THEME_MODE_DARK: string = 'dark';
+
+interface ThemePalette {
+  bg: string;
+  rootBg: string;
+  surface: string;
+  surfaceAlt: string;
+  primary: string;
+  primarySoft: string;
+  text: string;
+  muted: string;
+  border: string;
+  danger: string;
+  dangerSoft: string;
+  overlay: string;
+  dockGlass: string;
+  dockGlassActive: string;
+  dockGlassInactive: string;
+  dockGlassBorder: string;
+  dockGlassBorderSoft: string;
+  dockShadow: string;
+  dockTextActive: string;
+  cardShadow: string;
+  cardShadowStrong: string;
+  gridShadow: string;
+  warningIcon: string;
+  warningBg: string;
+  imageBg: string;
+  imageLoadingBg: string;
+  imageFailBg: string;
+  imageBorder: string;
+  imageBorderSoft: string;
+  placeholderText: string;
+  dialogSurface: string;
+  dialogTextSecondary: string;
+  dialogShadow: string;
+  dialogCancelBg: string;
+  dialogCancelText: string;
+  dialogDangerBg: string;
+  dialogDangerText: string;
+  dialogPrimaryBg: string;
+  dialogPrimaryText: string;
+  viewerImageBg: string;
+  viewerBackdrop: string;
+  viewerInfoBg: string;
+  viewerMeta: string;
+}
+
+const LIGHT_THEME: ThemePalette = {
+  bg: '#F4F7FB',
+  rootBg: '#FAFAFA',
+  surface: '#FFFFFF',
+  surfaceAlt: '#F8FAFD',
+  primary: '#0A59F7',
+  primarySoft: '#EAF1FF',
+  text: '#18202A',
+  muted: '#6F7A89',
+  border: '#E6EBF2',
+  danger: '#D9485F',
+  dangerSoft: '#FFF1F3',
+  overlay: '#880A1220',
+  dockGlass: '#52FFFFFF',
+  dockGlassActive: '#86FFFFFF',
+  dockGlassInactive: '#16FFFFFF',
+  dockGlassBorder: '#B8FFFFFF',
+  dockGlassBorderSoft: '#54FFFFFF',
+  dockShadow: '#16000000',
+  dockTextActive: '#102B5C',
+  cardShadow: '#120A59F7',
+  cardShadowStrong: '#180A59F7',
+  gridShadow: '#120A59F7',
+  warningIcon: '#D9485F',
+  warningBg: '#FFF1F3',
+  imageBg: '#F0F0F0',
+  imageLoadingBg: '#F5F5F5',
+  imageFailBg: '#FAFAFA',
+  imageBorder: '#E0E0E0',
+  imageBorderSoft: '#EEEEEE',
+  placeholderText: '#999999',
+  dialogSurface: '#FFFFFF',
+  dialogTextSecondary: '#555555',
+  dialogShadow: '#22000000',
+  dialogCancelBg: '#E8E8E8',
+  dialogCancelText: '#333333',
+  dialogDangerBg: '#CC0000',
+  dialogDangerText: '#FFFFFF',
+  dialogPrimaryBg: '#007DFF',
+  dialogPrimaryText: '#FFFFFF',
+  viewerImageBg: '#000000',
+  viewerBackdrop: '#E0000000',
+  viewerInfoBg: '#660A1220',
+  viewerMeta: '#D8E0EA'
+};
+
+const DARK_THEME: ThemePalette = {
+  bg: '#0B1220',
+  rootBg: '#08101B',
+  surface: '#121A2B',
+  surfaceAlt: '#1A2338',
+  primary: '#6DA6FF',
+  primarySoft: '#173766',
+  text: '#F3F7FF',
+  muted: '#9BA8BC',
+  border: '#2A3550',
+  danger: '#FF8592',
+  dangerSoft: '#48212A',
+  overlay: '#A0000000',
+  dockGlass: '#5A101724',
+  dockGlassActive: '#7A1C2940',
+  dockGlassInactive: '#24101724',
+  dockGlassBorder: '#52FFFFFF',
+  dockGlassBorderSoft: '#20FFFFFF',
+  dockShadow: '#40000000',
+  dockTextActive: '#F0F6FF',
+  cardShadow: '#2A000000',
+  cardShadowStrong: '#3A000000',
+  gridShadow: '#26000000',
+  warningIcon: '#FF9AA5',
+  warningBg: '#48212A',
+  imageBg: '#1C2436',
+  imageLoadingBg: '#152032',
+  imageFailBg: '#131C2C',
+  imageBorder: '#33415E',
+  imageBorderSoft: '#41506D',
+  placeholderText: '#8B95A8',
+  dialogSurface: '#111827',
+  dialogTextSecondary: '#AAB4C7',
+  dialogShadow: '#48000000',
+  dialogCancelBg: '#1D283B',
+  dialogCancelText: '#E7EEFB',
+  dialogDangerBg: '#B13A4C',
+  dialogDangerText: '#FFFFFF',
+  dialogPrimaryBg: '#4E8FFF',
+  dialogPrimaryText: '#08101B',
+  viewerImageBg: '#02050A',
+  viewerBackdrop: '#F0000000',
+  viewerInfoBg: '#7A101A2C',
+  viewerMeta: '#C6D0E0'
+};
 
 class NasStoredConfig {
   host: string = '';
@@ -31,16 +162,18 @@ class NasStoredConfig {
   path: string = '/photo/';
   user: string = '';
   pass: string = '';
+  theme_mode: string = THEME_MODE_SYSTEM;
   auto_upload: boolean = false;
   auto_delete_album_photo: boolean = true;
 
-  constructor(host: string = '', port: number = 5005, path: string = '/photo/', user: string = '', pass: string = '', autoUpload: boolean = false,
-    autoDeleteAlbumPhoto: boolean = true) {
+  constructor(host: string = '', port: number = 5005, path: string = '/photo/', user: string = '', pass: string = '',
+    themeMode: string = THEME_MODE_SYSTEM, autoUpload: boolean = false, autoDeleteAlbumPhoto: boolean = true) {
     this.host = host;
     this.port = port;
     this.path = path;
     this.user = user;
     this.pass = pass;
+    this.theme_mode = themeMode;
     this.auto_upload = autoUpload;
     this.auto_delete_album_photo = autoDeleteAlbumPhoto;
   }
@@ -106,6 +239,10 @@ class CapturedPhotoResult {
   }
 }
 
+interface ErrorWithCode extends Error {
+  code?: number;
+}
+
 function normalizeWebDavPath(path: string): string {
   const trimmedPath: string = path.trim();
   if (trimmedPath === '') {
@@ -122,9 +259,13 @@ function normalizeWebDavPath(path: string): string {
   return normalizedPath;
 }
 
+function resolveThemeMode(themeMode: string): string {
+  return themeMode === THEME_MODE_LIGHT || themeMode === THEME_MODE_DARK ? themeMode : THEME_MODE_SYSTEM;
+}
+
 export class AppStorageHelper {
-  static async saveConfig(ctx: common.Context, host: string, port: number, path: string, user: string, pass: string, autoUpload: boolean,
-    autoDeleteAlbumPhoto: boolean): Promise<void> {
+  static async saveConfig(ctx: common.Context, host: string, port: number, path: string, user: string, pass: string, themeMode: string,
+    autoUpload: boolean, autoDeleteAlbumPhoto: boolean): Promise<void> {
     try {
       const pref = await preferences.getPreferences(ctx, 'nas_config');
       await pref.put('webdav_host', host.trim());
@@ -132,6 +273,7 @@ export class AppStorageHelper {
       await pref.put('webdav_path', normalizeWebDavPath(path));
       await pref.put('webdav_user', user.trim());
       await pref.put('webdav_pass', pass);
+      await pref.put('theme_mode', themeMode);
       await pref.put('auto_upload', autoUpload);
       await pref.put('auto_delete_album_photo', autoDeleteAlbumPhoto);
       await pref.flush();
@@ -151,6 +293,7 @@ export class AppStorageHelper {
         normalizeWebDavPath((await pref.get('webdav_path', DEFAULT_NAS_CONFIG.path)) as string),
         ((await pref.get('webdav_user', DEFAULT_NAS_CONFIG.user)) as string).trim(),
         (await pref.get('webdav_pass', DEFAULT_NAS_CONFIG.pass)) as string,
+        resolveThemeMode((await pref.get('theme_mode', DEFAULT_NAS_CONFIG.theme_mode)) as string),
         (await pref.get('auto_upload', DEFAULT_NAS_CONFIG.auto_upload)) as boolean,
         (await pref.get('auto_delete_album_photo', DEFAULT_NAS_CONFIG.auto_delete_album_photo)) as boolean
       );
@@ -161,6 +304,7 @@ export class AppStorageHelper {
         DEFAULT_NAS_CONFIG.path,
         DEFAULT_NAS_CONFIG.user,
         DEFAULT_NAS_CONFIG.pass,
+        DEFAULT_NAS_CONFIG.theme_mode,
         DEFAULT_NAS_CONFIG.auto_upload,
         DEFAULT_NAS_CONFIG.auto_delete_album_photo
       );
@@ -234,7 +378,7 @@ function stringToArrayBuffer(str: string): ArrayBuffer {
 function safeWriteFile(localPath: string, data: ArrayBuffer): void {
   let file: fs.File | null = null;
   try {
-    file = fs.openSync(localPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+    file = fs.openSync(localPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
     fs.writeSync(file.fd, data);
   } finally {
     if (file) {
@@ -711,7 +855,7 @@ export class CameraService {
     try {
       const localPath: string = this.buildCapturePath(context);
       sourceFile = fs.openSync(uri, fs.OpenMode.READ_ONLY);
-      destinationFile = fs.openSync(localPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE);
+      destinationFile = fs.openSync(localPath, fs.OpenMode.READ_WRITE | fs.OpenMode.CREATE | fs.OpenMode.TRUNC);
       const buffer: ArrayBuffer = new ArrayBuffer(4096);
       let bytesRead: number = 0;
       do {
@@ -775,7 +919,7 @@ export class WebDavUploadService {
         const fileData: ArrayBuffer = await this.readFileAsArrayBuffer(localFilePath);
         if (fileData.byteLength === 0) { throw new Error('无法读取本地文件'); }
         const ok: boolean = await this.executeUpload(fileData, sn);
-        if (ok) { await this.deleteLocalFile(localFilePath); return true; }
+        if (ok) { return true; }
         rc++; le = new Error('上传返回失败'); if (rc < NasConfig.MAX_RETRY_COUNT) { await this.delay(NasConfig.RETRY_DELAY_MS); }
       } catch (e) { rc++; le = e instanceof Error ? e : new Error('上传失败'); if (rc < NasConfig.MAX_RETRY_COUNT) { await this.delay(NasConfig.RETRY_DELAY_MS); } }
     }
@@ -823,7 +967,6 @@ export class WebDavUploadService {
     });
   }
 
-  private async deleteLocalFile(fp: string): Promise<void> { try { if (fs.accessSync(fp)) { fs.unlinkSync(fp); } } catch {} }
   private delay(ms: number): Promise<void> {
     return new Promise<void>((resolve: () => void) => {
       setTimeout(resolve, ms);
@@ -964,13 +1107,20 @@ struct Index {
   @State settingsShowPass: boolean = false;
   @State settingsIsSaving: boolean = false;
   @State settingsSaveScale: number = 1.0;
+  @State themeMode: string = THEME_MODE_SYSTEM;
+  @State appliedColorMode: number = ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
   @State autoDeleteAlbumPhoto: boolean = true;
   private capturedAssetUri: string = '';
+  private theme: ThemePalette = LIGHT_THEME;
 
   private cameraService: CameraService = new CameraService();
   private uploadService: WebDavUploadService = new WebDavUploadService();
   private listService: WebDavListService = new WebDavListService();
   private thumbnailService: ThumbnailCacheService = ThumbnailCacheService.getInstance();
+
+  private getUiAbilityContext(): common.UIAbilityContext {
+    return this.getHostContext() as common.UIAbilityContext;
+  }
 
   private getHostContext(): common.Context {
     const hostContext: common.Context | undefined = this.getUIContext().getHostContext() as common.Context | undefined;
@@ -978,6 +1128,69 @@ struct Index {
       throw new Error('Host context unavailable');
     }
     return hostContext;
+  }
+
+  private getThemePalette(): ThemePalette {
+    const activeColorMode: number = this.themeMode === THEME_MODE_SYSTEM ? this.resolveAppliedColorMode() : this.appliedColorMode;
+    return activeColorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? DARK_THEME : LIGHT_THEME;
+  }
+
+  private resolveAppliedColorMode(): number {
+    if (this.themeMode === THEME_MODE_DARK) {
+      return ConfigurationConstant.ColorMode.COLOR_MODE_DARK;
+    }
+    if (this.themeMode === THEME_MODE_LIGHT) {
+      return ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
+    }
+    const systemColorMode: ConfigurationConstant.ColorMode | undefined = this.getUiAbilityContext().config.colorMode;
+    return systemColorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK
+      ? ConfigurationConstant.ColorMode.COLOR_MODE_DARK
+      : ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
+  }
+
+  private applyThemeMode(): void {
+    try {
+      const context: common.UIAbilityContext = this.getUiAbilityContext();
+      if (this.themeMode === THEME_MODE_DARK) {
+        context.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_DARK);
+      } else if (this.themeMode === THEME_MODE_LIGHT) {
+        context.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT);
+      } else {
+        context.setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
+      }
+    } catch (e) {
+      hilog.warn(0x0000, TAG, '%{public}s', '切换主题模式失败: ' + (e instanceof Error ? e.message : String(e)));
+    } finally {
+      this.appliedColorMode = this.resolveAppliedColorMode();
+      this.theme = this.getThemePalette();
+      this.updateSystemBarStyle();
+    }
+  }
+
+  private previewThemeMode(themeMode: string): void {
+    this.themeMode = resolveThemeMode(themeMode);
+    this.applyThemeMode();
+  }
+
+  private getDockIconColor(isActive: boolean): string {
+    return isActive ? this.theme.primary : this.theme.muted;
+  }
+
+  private async updateSystemBarStyle(): Promise<void> {
+    try {
+      const activeColorMode: number = this.resolveAppliedColorMode();
+      const theme: ThemePalette = activeColorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? DARK_THEME : LIGHT_THEME;
+      const win = await window.getLastWindow(this.getUiAbilityContext());
+      const barContentColor: string = activeColorMode === ConfigurationConstant.ColorMode.COLOR_MODE_DARK ? '#FFFFFF' : '#000000';
+      await win.setWindowSystemBarProperties({
+        statusBarColor: '#00000000',
+        navigationBarColor: theme.rootBg,
+        statusBarContentColor: barContentColor,
+        navigationBarContentColor: barContentColor
+      });
+    } catch (e) {
+      hilog.warn(0x0000, TAG, '%{public}s', '同步系统栏样式失败: ' + (e instanceof Error ? e.message : String(e)));
+    }
   }
 
   private showToast(message: string, duration: number = 2000): void {
@@ -1004,8 +1217,30 @@ struct Index {
     });
   }
 
+  private arePermissionsGranted(permissionList: Array<Permissions>): boolean {
+    try {
+      const context: common.UIAbilityContext = this.getHostContext() as common.UIAbilityContext;
+      const accessTokenId: number = context.applicationInfo.accessTokenId;
+      const atManager = abilityAccessCtrl.createAtManager();
+
+      for (let i: number = 0; i < permissionList.length; i++) {
+        if (atManager.checkAccessTokenSync(accessTokenId, permissionList[i]) !== abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+          return false;
+        }
+      }
+      return true;
+    } catch (e) {
+      hilog.warn(0x0000, TAG, '%{public}s', '权限预检查失败，回退到系统弹窗申请: ' + (e instanceof Error ? e.message : String(e)));
+      return false;
+    }
+  }
+
   private async ensurePermissions(permissionList: Array<Permissions>, failureLogLabel: string): Promise<boolean> {
     try {
+      if (permissionList.length === 0 || this.arePermissionsGranted(permissionList)) {
+        return true;
+      }
+
       const context: common.UIAbilityContext = this.getHostContext() as common.UIAbilityContext;
       const atManager = abilityAccessCtrl.createAtManager();
       const result: PermissionRequestResult = await atManager.requestPermissionsFromUser(context, permissionList);
@@ -1013,12 +1248,16 @@ struct Index {
         return false;
       }
       for (let i: number = 0; i < result.authResults.length; i++) {
-        if (result.authResults[i] !== 0) {
+        if (result.authResults[i] !== abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
           return false;
         }
       }
       return true;
     } catch (e) {
+      const errorCode: number | undefined = (e as ErrorWithCode).code;
+      if (errorCode === 12100011 || this.arePermissionsGranted(permissionList)) {
+        return true;
+      }
       hilog.error(0x0000, TAG, '%{public}s', failureLogLabel + ': ' + (e instanceof Error ? e.message : String(e)));
       return false;
     }
@@ -1069,20 +1308,37 @@ struct Index {
 
   private cancelUpload(): void {
     this.showUploadConfirmDialog = false;
+    this.deleteLocalPhoto(false);
     this.photoPath = '';
     this.capturedAssetUri = '';
     this.showToast('已取消上传', 2000);
   }
 
   aboutToAppear(): void {
-    this.initFullScreen();
-    const ctx: common.Context = this.getHostContext();
-    NasConfig.initFromStorage(ctx).then(() => {
-      this.thumbnailService.initCache(ctx).then(() => {
-        this.loadSettingsConfig();
-        this.loadNasFiles();
-      });
-    });
+    this.initializePage();
+  }
+
+  onPageShow(): void {
+    if (this.themeMode === THEME_MODE_SYSTEM) {
+      this.appliedColorMode = this.resolveAppliedColorMode();
+      this.theme = this.getThemePalette();
+      this.updateSystemBarStyle();
+    }
+  }
+
+  private async initializePage(): Promise<void> {
+    try {
+      await this.initFullScreen();
+      const ctx: common.Context = this.getHostContext();
+      await NasConfig.initFromStorage(ctx);
+      await this.thumbnailService.initCache(ctx);
+      await this.loadSettingsConfig();
+      this.applyThemeMode();
+      await this.loadNasFiles();
+    } catch (e) {
+      hilog.error(0x0000, TAG, '%{public}s', '页面初始化失败: ' + (e instanceof Error ? e.message : String(e)));
+      this.showToast('初始化失败，请稍后重试', 2500);
+    }
   }
 
   async loadSettingsConfig(): Promise<void> {
@@ -1095,6 +1351,9 @@ struct Index {
       this.settingsUser = cfg.user;
       this.settingsPass = '';
       this.settingsShowPass = false;
+      this.themeMode = resolveThemeMode(cfg.theme_mode);
+      this.appliedColorMode = this.resolveAppliedColorMode();
+      this.theme = this.getThemePalette();
       this.autoUpload = cfg.auto_upload;
       this.autoDeleteAlbumPhoto = cfg.auto_delete_album_photo;
       hilog.info(0x0000, 'Settings', '%{public}s', '✅ 设置配置加载完成');
@@ -1119,6 +1378,7 @@ struct Index {
         this.settingsPath,
         this.settingsUser,
         nextPassword,
+        this.themeMode,
         this.autoUpload,
         this.autoDeleteAlbumPhoto
       );
@@ -1128,6 +1388,7 @@ struct Index {
         this.settingsPath,
         this.settingsUser.trim(),
         nextPassword,
+        this.themeMode,
         this.autoUpload,
         this.autoDeleteAlbumPhoto
       ));
@@ -1135,13 +1396,16 @@ struct Index {
       this.settingsPort = String(NasConfig.WEBDAV_PORT);
       this.settingsPath = NasConfig.WEBDAV_PATH;
       this.settingsUser = NasConfig.USERNAME;
-      this.settingsPass = nextPassword;
-      
-      this.showToast('✅ 配置已保存！', 2500);
-      
+      this.settingsPass = '';
+      this.settingsShowPass = false;
+      this.themeMode = resolveThemeMode(this.themeMode);
+      this.applyThemeMode();
+
+      this.showToast('配置已保存', 2500);
+
       setTimeout(() => { this.loadNasFiles(); }, 500);
     } catch (e) {
-      this.showToast('❌ 保存失败，请重试', 3000);
+      this.showToast('保存失败，请重试', 3000);
       hilog.error(0x0000, 'Settings', '%{public}s', '保存配置异常: ' + (e instanceof Error ? e.message : String(e)));
     } finally { 
       this.settingsIsSaving = false; 
@@ -1155,7 +1419,10 @@ struct Index {
     this.settingsUser = DEFAULT_NAS_CONFIG.user;
     this.settingsPass = DEFAULT_NAS_CONFIG.pass;
     this.settingsShowPass = false;
+    this.themeMode = DEFAULT_NAS_CONFIG.theme_mode;
+    this.autoUpload = DEFAULT_NAS_CONFIG.auto_upload;
     this.autoDeleteAlbumPhoto = DEFAULT_NAS_CONFIG.auto_delete_album_photo;
+    this.applyThemeMode();
     this.showToast('已恢复默认值', 2000);
   }
 
@@ -1166,13 +1433,6 @@ struct Index {
       const avoidArea = win.getWindowAvoidArea(window.AvoidAreaType.TYPE_SYSTEM);
       this.statusBarHeight = this.getUIContext().px2vp(avoidArea.topRect.height);
       this.navBarHeight = this.getUIContext().px2vp(avoidArea.bottomRect.height);
-      await win.setWindowLayoutFullScreen(true);
-      await win.setWindowSystemBarProperties({
-        statusBarColor: '#00000000',
-        navigationBarColor: '#00000000',
-        statusBarContentColor: '#000000',
-        navigationBarContentColor: '#000000'
-      });
       hilog.info(0x0000, TAG, '%{public}s', '全屏适配完成 状态栏高度=' + String(this.statusBarHeight) + ' 导航栏高度=' + String(this.navBarHeight));
     } catch (e) {
       hilog.error(0x0000, TAG, '%{public}s', '全屏适配失败: ' + (e instanceof Error ? e.message : String(e)));
@@ -1242,7 +1502,12 @@ struct Index {
         await this.preloadThumbnails();
       }
     }
-    catch (e) { const em: string = e instanceof Error ? e.message : 'NAS不可达'; this.showToast(em.length > 0 ? em : 'NAS不可达', 4000); this.nasFiles = []; }
+    catch (e) {
+      const em: string = e instanceof Error ? e.message : 'NAS不可达';
+      this.nasError = em.length > 0 ? em : 'NAS不可达';
+      this.showToast(this.nasError, 4000);
+      this.nasFiles = [];
+    }
     this.isRefreshing = false; this.runAnimation({ duration: 300, curve: Curve.EaseOut }, () => { this.fileListOpacity = 1; });
   }
 
@@ -1363,43 +1628,49 @@ struct Index {
       const ok: boolean = await this.uploadService.uploadFile(this.photoPath, fn);
       if (ok) {
         hilog.info(0x0000, 'Upload', '%{public}s', '上传成功: ' + fn);
-        this.showToast('✅ 上传成功！', 2000);
+        this.showToast('上传成功', 2000);
 
-        await this.deleteLocalPhoto();
+        this.deleteLocalPhoto(false);
         await this.deleteCapturedAsset();
         await this.loadNasFiles();
+        this.photoPath = '';
       } else {
         hilog.error(0x0000, 'Upload', '%{public}s', '上传失败: ' + fn);
         this.showToast('上传失败', 3000);
+        if (this.photoPath !== '') {
+          this.showUploadConfirmDialog = true;
+        }
       }
     } catch (e) {
       hilog.error(0x0000, 'Upload', '%{public}s', '上传异常: ' + (e instanceof Error ? e.message : String(e)));
       this.showToast('上传失败', 3000);
+      if (this.photoPath !== '') {
+        this.showUploadConfirmDialog = true;
+      }
     } finally {
       this.isLoading = false;
       this.loadingText = '';
-      this.photoPath = '';
     }
   }
 
-  private async deleteLocalPhoto(): Promise<void> {
+  private deleteLocalPhoto(showFailureToast: boolean = true): void {
     if (!this.photoPath) {
-      hilog.warn(0x0000, 'Clean', '%{public}s', '⚠️ 本地照片路径为空');
+      hilog.warn(0x0000, 'Clean', '%{public}s', '本地照片路径为空，跳过清理');
       return;
     }
 
     try {
       if (fs.accessSync(this.photoPath)) {
         fs.unlinkSync(this.photoPath);
-        hilog.info(0x0000, 'Clean', '%{public}s', '✅ 已删除临时照片: ' + this.photoPath);
+        hilog.info(0x0000, 'Clean', '%{public}s', '已删除临时照片: ' + this.photoPath);
       } else {
-        hilog.warn(0x0000, 'Clean', '%{public}s', '⚠️ 临时照片文件不存在: ' + this.photoPath);
+        hilog.warn(0x0000, 'Clean', '%{public}s', '临时照片文件不存在: ' + this.photoPath);
       }
-
-      this.showToast('✅ 上传成功！本地已清理', 2500);
     } catch (e) {
-      hilog.error(0x0000, 'Clean', '%{public}s', '❌ 删除失败: ' + (e instanceof Error ? e.message : String(e)));
-      this.showToast('上传成功（清理失败）', 3000);
+      hilog.error(0x0000, 'Clean', '%{public}s', '清理临时照片失败: ' + (e instanceof Error ? e.message : String(e)));
+      if (showFailureToast) {
+        this.showToast('临时照片清理失败', 3000);
+      }
     }
   }
 
@@ -1486,8 +1757,94 @@ struct Index {
     setTimeout(() => { this.selectedImage = ''; this.selectedImagePath = ''; }, 200);
   }
 
+  @Builder DockBackplate() {
+    Row() {}
+      .width('86%')
+      .height(68)
+      .backgroundColor(this.theme.dockGlass)
+      .backgroundBlurStyle(BlurStyle.COMPONENT_REGULAR)
+      .border({
+        width: 1,
+        color: this.theme.dockGlassBorderSoft
+      })
+      .borderRadius(34)
+      .shadow({
+        radius: 12,
+        color: this.theme.dockShadow,
+        offsetX: 0,
+        offsetY: 4
+      })
+      .position({ bottom: this.navBarHeight + 12, left: '7%' })
+      .hitTestBehavior(HitTestMode.None)
+      .zIndex(1)
+  }
+
+  @Builder UploadTabIcon(isActive: boolean) {
+    Stack({ alignContent: Alignment.Center }) {
+      Row() {}
+        .width(18)
+        .height(12)
+        .border({ width: 1.6, color: this.getDockIconColor(isActive) })
+        .borderRadius(4)
+        .offset({ y: 3 })
+      Row() {}
+        .width(6)
+        .height(6)
+        .border({ width: 1.6, color: this.getDockIconColor(isActive) })
+        .borderRadius(3)
+        .offset({ y: 3 })
+      Row() {}
+        .width(8)
+        .height(3)
+        .borderRadius(2)
+        .backgroundColor(this.getDockIconColor(isActive))
+        .offset({ x: -4, y: -4 })
+    }.width(20).height(20)
+  }
+
+  @Builder SettingsTabIcon(isActive: boolean) {
+    Stack({ alignContent: Alignment.Center }) {
+      Row() {}
+        .width(16)
+        .height(16)
+        .border({ width: 1.6, color: this.getDockIconColor(isActive) })
+        .borderRadius(8)
+      Row() {}
+        .width(6)
+        .height(6)
+        .borderRadius(3)
+        .backgroundColor(this.getDockIconColor(isActive))
+      Column() {}
+        .width(2)
+        .height(6)
+        .borderRadius(1)
+        .backgroundColor(this.getDockIconColor(isActive))
+        .offset({ y: -9 })
+      Column() {}
+        .width(2)
+        .height(6)
+        .borderRadius(1)
+        .backgroundColor(this.getDockIconColor(isActive))
+        .offset({ y: 9 })
+      Row() {}
+        .width(6)
+        .height(2)
+        .borderRadius(1)
+        .backgroundColor(this.getDockIconColor(isActive))
+        .offset({ x: -9 })
+      Row() {}
+        .width(6)
+        .height(2)
+        .borderRadius(1)
+        .backgroundColor(this.getDockIconColor(isActive))
+        .offset({ x: 9 })
+    }.width(20).height(20)
+  }
+
   build() {
     Stack({ alignContent: Alignment.TopStart }) {
+      this.DockBackplate()
+
       Tabs({ barPosition: BarPosition.End, index: this.currentTab }) {
         TabContent() {
           this.MainPageContent()
@@ -1498,9 +1855,14 @@ struct Index {
         }.tabBar(this.SettingsTabBuilder())
       }
       .width('100%').height('100%')
-      .barBackgroundColor('#F8FFFFFF')
+      .barHeight(92)
+      .barOverlap(false)
+      .divider(null)
+      .barBackgroundColor('#00000000')
+      .barBackgroundBlurStyle(BlurStyle.NONE)
       .barMode(BarMode.Fixed)
       .animationDuration(250)
+      .zIndex(2)
       .onChange((index: number) => {
         this.currentTab = index;
       })
@@ -1510,97 +1872,172 @@ struct Index {
       if (this.isLoading) { this.LoadingOverlay() }
       if (this.isDeleting) { this.DeletingOverlay() }
       if (this.selectedImage !== '') { this.ImageViewerBuilder() }
-    }.width('100%').height('100%').backgroundColor('#FAFAFA')
+    }.width('100%').height('100%').backgroundColor(this.theme.rootBg)
   }
 
   @Builder PhotoTabBuilder() {
     Column({ space: 4 }) {
-      Text('上传').fontSize(13).fontColor(this.currentTab === 0 ? COLOR_PRIMARY : COLOR_MUTED)
+      this.UploadTabIcon(this.currentTab === 0)
+      Text('上传').fontSize(13).fontColor(this.currentTab === 0 ? this.theme.dockTextActive : this.theme.text)
         .fontWeight(this.currentTab === 0 ? FontWeight.Medium : FontWeight.Normal)
-      Row() {}.width(22).height(3).borderRadius(2).backgroundColor(this.currentTab === 0 ? COLOR_PRIMARY : '#00000000')
-    }.width('100%').height(56).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
+    }
+    .width(108)
+    .height(58)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .backgroundColor(this.currentTab === 0 ? this.theme.dockGlassActive : this.theme.dockGlassInactive)
+    .backgroundBlurStyle(this.currentTab === 0 ? BlurStyle.COMPONENT_THICK : BlurStyle.COMPONENT_ULTRA_THIN)
+    .border({
+      width: 1,
+      color: this.currentTab === 0 ? this.theme.dockGlassBorder : this.theme.dockGlassBorderSoft
+    })
+    .borderRadius(29)
+    .shadow({
+      radius: this.currentTab === 0 ? 12 : 4,
+      color: this.currentTab === 0 ? this.theme.dockShadow : this.theme.cardShadow,
+      offsetX: 0,
+      offsetY: this.currentTab === 0 ? 6 : 2
+    })
   }
 
   @Builder SettingsTabBuilder() {
     Column({ space: 4 }) {
-      Text('设置').fontSize(13).fontColor(this.currentTab === 1 ? COLOR_PRIMARY : COLOR_MUTED)
+      this.SettingsTabIcon(this.currentTab === 1)
+      Text('设置').fontSize(13).fontColor(this.currentTab === 1 ? this.theme.dockTextActive : this.theme.text)
         .fontWeight(this.currentTab === 1 ? FontWeight.Medium : FontWeight.Normal)
-      Row() {}.width(22).height(3).borderRadius(2).backgroundColor(this.currentTab === 1 ? COLOR_PRIMARY : '#00000000')
-    }.width('100%').height(56).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
+    }
+    .width(108)
+    .height(58)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .backgroundColor(this.currentTab === 1 ? this.theme.dockGlassActive : this.theme.dockGlassInactive)
+    .backgroundBlurStyle(this.currentTab === 1 ? BlurStyle.COMPONENT_THICK : BlurStyle.COMPONENT_ULTRA_THIN)
+    .border({
+      width: 1,
+      color: this.currentTab === 1 ? this.theme.dockGlassBorder : this.theme.dockGlassBorderSoft
+    })
+    .borderRadius(29)
+    .shadow({
+      radius: this.currentTab === 1 ? 12 : 4,
+      color: this.currentTab === 1 ? this.theme.dockShadow : this.theme.cardShadow,
+      offsetX: 0,
+      offsetY: this.currentTab === 1 ? 6 : 2
+    })
+  }
+
+  @Builder ThemeModeChip(label: string, themeMode: string) {
+    Column({ space: 4 }) {
+      Text(label).fontSize(13).fontColor(this.themeMode === themeMode ? this.theme.dockTextActive : this.theme.text)
+        .fontWeight(this.themeMode === themeMode ? FontWeight.Medium : FontWeight.Normal)
+      if (this.themeMode === themeMode) {
+        Row() {}.width(18).height(3).borderRadius(2).backgroundColor(this.theme.primary)
+      }
+    }
+    .layoutWeight(1)
+    .height(54)
+    .justifyContent(FlexAlign.Center)
+    .alignItems(HorizontalAlign.Center)
+    .backgroundColor(this.themeMode === themeMode ? this.theme.primarySoft : this.theme.surfaceAlt)
+    .border({
+      width: 1,
+      color: this.themeMode === themeMode ? this.theme.primary : this.theme.border
+    })
+    .borderRadius(18)
+    .onClick(() => this.previewThemeMode(themeMode))
   }
 
   @Builder SettingsContent() {
     Column() {
       Column({ space: 6 }) {
-        Text('连接与上传设置').fontSize(24).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
-        Text('配置 WebDAV、账号和拍照后的自动行为').fontSize(12).fontColor(COLOR_MUTED)
+        Text('连接与上传设置').fontSize(24).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
+        Text('配置 WebDAV、账号、主题和拍照后的自动行为').fontSize(12).fontColor(this.theme.muted)
       }.width('100%').padding({ left: 20, right: 20, top: this.statusBarHeight + 18, bottom: 18 })
 
       Scroll() {
         Column({ space: 16 }) {
           Column({ space: 14 }) {
-            Text('连接配置').fontSize(17).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+            Text('连接配置').fontSize(17).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
             Column({ space: 12 }) {
               Column({ space: 6 }) {
-                Text('主机地址').fontSize(12).fontColor(COLOR_MUTED)
+                Text('主机地址').fontSize(12).fontColor(this.theme.muted)
                 TextInput({ text: this.settingsHost, placeholder: '例如: 192.168.1.100' })
-                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .height(48).fontSize(15).fontColor(this.theme.text).placeholderColor(this.theme.muted)
+                  .backgroundColor(this.theme.surfaceAlt).borderRadius(14)
                   .padding({ left: 16, right: 16 }).onChange((v: string) => { this.settingsHost = v; })
               }
 
               Column({ space: 6 }) {
-                Text('端口').fontSize(12).fontColor(COLOR_MUTED)
+                Text('端口').fontSize(12).fontColor(this.theme.muted)
                 TextInput({ text: this.settingsPort, placeholder: '默认: 5005' })
-                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .height(48).fontSize(15).fontColor(this.theme.text).placeholderColor(this.theme.muted)
+                  .backgroundColor(this.theme.surfaceAlt).borderRadius(14)
                   .padding({ left: 16, right: 16 }).type(InputType.Number)
                   .onChange((v: string) => { this.settingsPort = v; })
               }
 
               Column({ space: 6 }) {
-                Text('WebDAV 路径').fontSize(12).fontColor(COLOR_MUTED)
+                Text('WebDAV 路径').fontSize(12).fontColor(this.theme.muted)
                 TextInput({ text: this.settingsPath, placeholder: '例如: /photo/' })
-                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .height(48).fontSize(15).fontColor(this.theme.text).placeholderColor(this.theme.muted)
+                  .backgroundColor(this.theme.surfaceAlt).borderRadius(14)
                   .padding({ left: 16, right: 16 }).onChange((v: string) => { this.settingsPath = v; })
               }
             }
-          }.width('100%').padding(18).backgroundColor(COLOR_SURFACE).borderRadius(22)
-            .shadow({ radius: 20, color: '#120A59F7', offsetX: 0, offsetY: 8 })
+          }.width('100%').padding(18).backgroundColor(this.theme.surface).borderRadius(22)
+            .shadow({ radius: 20, color: this.theme.cardShadow, offsetX: 0, offsetY: 8 })
 
           Column({ space: 14 }) {
-            Text('认证信息').fontSize(17).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+            Text('认证信息').fontSize(17).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
             Column({ space: 12 }) {
               Column({ space: 6 }) {
-                Text('用户名').fontSize(12).fontColor(COLOR_MUTED)
+                Text('用户名').fontSize(12).fontColor(this.theme.muted)
                 TextInput({ text: this.settingsUser, placeholder: 'WebDAV 用户名' })
-                  .height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                  .height(48).fontSize(15).fontColor(this.theme.text).placeholderColor(this.theme.muted)
+                  .backgroundColor(this.theme.surfaceAlt).borderRadius(14)
                   .padding({ left: 16, right: 16 }).onChange((v: string) => { this.settingsUser = v; })
               }
 
               Column({ space: 6 }) {
-                Text('密码').fontSize(12).fontColor(COLOR_MUTED)
+                Text('密码').fontSize(12).fontColor(this.theme.muted)
                 Row({ space: 8 }) {
                   TextInput({ text: this.settingsPass, placeholder: '留空则保持当前密码不变' })
-                    .layoutWeight(1).height(48).fontSize(15).backgroundColor(COLOR_SURFACE_ALT).borderRadius(14)
+                    .layoutWeight(1).height(48).fontSize(15).fontColor(this.theme.text).placeholderColor(this.theme.muted)
+                    .backgroundColor(this.theme.surfaceAlt).borderRadius(14)
                     .padding({ left: 16, right: 16 }).type(this.settingsShowPass ? InputType.Normal : InputType.Password)
                     .onChange((v: string) => { this.settingsPass = v; })
-                  Button(this.settingsShowPass ? '隐藏' : '显示').height(48).fontSize(13).fontColor(COLOR_TEXT)
-                    .backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(14).padding({ left: 14, right: 14 })
+                  Button(this.settingsShowPass ? '隐藏' : '显示').height(48).fontSize(13).fontColor(this.theme.text)
+                    .backgroundColor(this.theme.primarySoft).borderRadius(14).padding({ left: 14, right: 14 })
                     .onClick(() => { this.settingsShowPass = !this.settingsShowPass; })
                 }.alignItems(VerticalAlign.Center)
               }
 
-              Text('留空则保持当前密码不变').fontSize(11).fontColor(COLOR_MUTED)
+              Text('留空则保持当前密码不变').fontSize(11).fontColor(this.theme.muted)
             }
-          }.width('100%').padding(18).backgroundColor(COLOR_SURFACE).borderRadius(22)
-            .shadow({ radius: 20, color: '#120A59F7', offsetX: 0, offsetY: 8 })
+          }.width('100%').padding(18).backgroundColor(this.theme.surface).borderRadius(22)
+            .shadow({ radius: 20, color: this.theme.cardShadow, offsetX: 0, offsetY: 8 })
 
           Column({ space: 14 }) {
-            Text('上传设置').fontSize(17).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
+            Text('显示模式').fontSize(17).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
+            Text(
+              this.themeMode === THEME_MODE_SYSTEM
+                ? '当前跟随系统外观自动切换'
+                : (this.themeMode === THEME_MODE_DARK ? '当前固定为深色模式' : '当前固定为浅色模式')
+            ).fontSize(12).fontColor(this.theme.muted)
+            Row({ space: 10 }) {
+              this.ThemeModeChip('跟随系统', THEME_MODE_SYSTEM)
+              this.ThemeModeChip('浅色', THEME_MODE_LIGHT)
+              this.ThemeModeChip('深色', THEME_MODE_DARK)
+            }.width('100%')
+          }.width('100%').padding(18).backgroundColor(this.theme.surface).borderRadius(22)
+            .shadow({ radius: 20, color: this.theme.cardShadow, offsetX: 0, offsetY: 8 })
+
+          Column({ space: 14 }) {
+            Text('上传设置').fontSize(17).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
             Column({ space: 12 }) {
               Row() {
                 Column({ space: 4 }) {
-                  Text('自动上传').fontSize(15).fontColor(COLOR_TEXT)
-                  Text('拍照后直接上传到 NAS').fontSize(12).fontColor(COLOR_MUTED)
+                  Text('自动上传').fontSize(15).fontColor(this.theme.text)
+                  Text('拍照后直接上传到 NAS').fontSize(12).fontColor(this.theme.muted)
                 }.layoutWeight(1).alignItems(HorizontalAlign.Start)
                 Toggle({ type: ToggleType.Switch, isOn: this.autoUpload })
                   .onChange((isOn: boolean) => { this.autoUpload = isOn; })
@@ -1608,92 +2045,93 @@ struct Index {
 
               Row() {
                 Column({ space: 4 }) {
-                  Text('自动删除相册照片').fontSize(15).fontColor(COLOR_TEXT)
-                  Text('上传后自动尝试清理系统相册中的新照片').fontSize(12).fontColor(COLOR_MUTED)
+                  Text('自动删除相册照片').fontSize(15).fontColor(this.theme.text)
+                  Text('上传后自动尝试清理系统相册中的新照片').fontSize(12).fontColor(this.theme.muted)
                 }.layoutWeight(1).alignItems(HorizontalAlign.Start)
                 Toggle({ type: ToggleType.Switch, isOn: this.autoDeleteAlbumPhoto })
                   .onChange((isOn: boolean) => { this.autoDeleteAlbumPhoto = isOn; })
               }.padding({ top: 4, bottom: 4 }).justifyContent(FlexAlign.SpaceBetween)
             }
-          }.width('100%').padding(18).backgroundColor(COLOR_SURFACE).borderRadius(22)
-            .shadow({ radius: 20, color: '#120A59F7', offsetX: 0, offsetY: 8 })
+          }.width('100%').padding(18).backgroundColor(this.theme.surface).borderRadius(22)
+            .shadow({ radius: 20, color: this.theme.cardShadow, offsetX: 0, offsetY: 8 })
 
           Row({ space: 12 }) {
-            Button('恢复默认').layoutWeight(1).height(46).fontSize(14).fontColor(COLOR_DANGER)
-              .backgroundColor(COLOR_DANGER_SOFT).borderRadius(23)
+            Button('恢复默认').layoutWeight(1).height(46).fontSize(14).fontColor(this.theme.danger)
+              .backgroundColor(this.theme.dangerSoft).borderRadius(23)
               .onClick(() => this.resetSettingsToDefault())
-            Button('保存配置').layoutWeight(1).height(46).fontSize(15).fontColor(COLOR_SURFACE)
-              .backgroundColor(COLOR_PRIMARY).borderRadius(23).enabled(!this.settingsIsSaving)
+            Button('保存配置').layoutWeight(1).height(46).fontSize(15).fontColor(this.theme.dialogPrimaryText)
+              .backgroundColor(this.theme.primary).borderRadius(23).enabled(!this.settingsIsSaving)
               .scale({ x: this.settingsSaveScale, y: this.settingsSaveScale })
               .onClick(() => this.saveSettingsConfig())
           }.width('100%').padding({ bottom: 12 })
 
           Column({ space: 6 }) {
-            Text('说明').fontSize(13).fontWeight(FontWeight.Medium).fontColor(COLOR_PRIMARY)
-            Text('修改配置后将重新使用新的 WebDAV 连接参数。').fontSize(12).fontColor(COLOR_MUTED).lineHeight(18)
-            Text('支持飞牛（fnOS）、群晖等提供 WebDAV 服务的 NAS。').fontSize(12).fontColor(COLOR_MUTED).lineHeight(18)
-          }.width('100%').padding(16).backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(18).margin({ bottom: 24 })
+            Text('说明').fontSize(13).fontWeight(FontWeight.Medium).fontColor(this.theme.primary)
+            Text('修改配置后将重新使用新的 WebDAV 连接参数。').fontSize(12).fontColor(this.theme.muted).lineHeight(18)
+            Text('主题可跟随系统，也可以固定为浅色或深色。').fontSize(12).fontColor(this.theme.muted).lineHeight(18)
+            Text('支持飞牛（fnOS）、群晖等提供 WebDAV 服务的 NAS。').fontSize(12).fontColor(this.theme.muted).lineHeight(18)
+          }.width('100%').padding(16).backgroundColor(this.theme.primarySoft).borderRadius(18).margin({ bottom: 24 })
         }
       }.width('100%').layoutWeight(1).padding({ left: 20, right: 20 })
 
       if (this.settingsIsSaving) {
         Column() {
-          LoadingProgress().width(40).height(40).color('#007DFF').margin({ bottom: 12 })
-          Text('保存中...').fontSize(14).fontColor(COLOR_SURFACE)
-        }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
+          LoadingProgress().width(40).height(40).color(this.theme.primary).margin({ bottom: 12 })
+          Text('保存中...').fontSize(14).fontColor(this.theme.surface)
+        }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(this.theme.overlay)
           .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(100)
       }
-    }.width('100%').height('100%').backgroundColor(COLOR_BG)
+    }.width('100%').height('100%').backgroundColor(this.theme.bg)
   }
 
   @Builder MainPageContent() {
     Column({ space: 16 }) {
       Row() {
         Column({ space: 6 }) {
-          Text($r('app.string.title_main')).fontSize(24).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
-          Text('拍一张照片，自动同步到你的 NAS。').fontSize(12).fontColor(COLOR_MUTED)
+          Text($r('app.string.title_main')).fontSize(24).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
+          Text('拍一张照片，自动同步到你的 NAS。').fontSize(12).fontColor(this.theme.muted)
         }.alignItems(HorizontalAlign.Start).layoutWeight(1)
       }.width('100%').padding({ left: 20, right: 20, top: this.statusBarHeight + 18 })
 
       Column({ space: 14 }) {
         Row() {
           Column({ space: 4 }) {
-            Text('当前连接').fontSize(11).fontColor(COLOR_MUTED)
+            Text('当前连接').fontSize(11).fontColor(this.theme.muted)
             Text(
               this.settingsHost !== ''
                 ? (this.settingsHost + ':' + this.settingsPort)
                 : '未配置 NAS'
-            ).fontSize(16).fontWeight(FontWeight.Medium).fontColor(COLOR_TEXT)
+            ).fontSize(16).fontWeight(FontWeight.Medium).fontColor(this.theme.text)
           }.layoutWeight(1).alignItems(HorizontalAlign.Start)
-          Text(this.autoUpload ? '自动上传已开启' : '手动确认上传').fontSize(11).fontColor(COLOR_PRIMARY)
-            .padding({ left: 10, right: 10, top: 6, bottom: 6 }).backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(12)
+          Text(this.autoUpload ? '自动上传已开启' : '手动确认上传').fontSize(11).fontColor(this.theme.primary)
+            .padding({ left: 10, right: 10, top: 6, bottom: 6 }).backgroundColor(this.theme.primarySoft).borderRadius(12)
         }
 
-        Text(this.settingsPath !== '' ? this.settingsPath : DEFAULT_NAS_CONFIG.path).fontSize(12).fontColor(COLOR_MUTED)
+        Text(this.settingsPath !== '' ? this.settingsPath : DEFAULT_NAS_CONFIG.path).fontSize(12).fontColor(this.theme.muted)
 
         Button('立即拍照').width('100%').height(52).fontSize(17).fontWeight(FontWeight.Medium)
-          .backgroundColor(COLOR_PRIMARY).fontColor(COLOR_SURFACE).borderRadius(26)
+          .backgroundColor(this.theme.primary).fontColor(this.theme.dialogPrimaryText).borderRadius(26)
           .enabled(!this.isLoading).scale({ x: this.btnScale, y: this.btnScale })
           .onClick(() => this.handleTakePhoto())
-      }.width('100%').padding(20).backgroundColor(COLOR_SURFACE).borderRadius(26)
-        .shadow({ radius: 24, color: '#180A59F7', offsetX: 0, offsetY: 10 })
+      }.width('100%').padding(20).backgroundColor(this.theme.surface).borderRadius(26)
+        .shadow({ radius: 24, color: this.theme.cardShadowStrong, offsetX: 0, offsetY: 10 })
         .margin({ left: 20, right: 20 })
 
       Row() {
         Column({ space: 2 }) {
-          Text('NAS 图片').fontSize(18).fontWeight(FontWeight.Bold).fontColor(COLOR_TEXT)
-          Text('长按图片可删除，点击可预览').fontSize(11).fontColor(COLOR_MUTED)
+          Text('NAS 图片').fontSize(18).fontWeight(FontWeight.Bold).fontColor(this.theme.text)
+          Text('长按图片可删除，点击可预览').fontSize(11).fontColor(this.theme.muted)
         }.layoutWeight(1).alignItems(HorizontalAlign.Start)
-        Button(this.isRefreshing ? '刷新中' : '刷新').type(ButtonType.Normal).height(34).fontSize(12).fontColor(COLOR_PRIMARY)
-          .backgroundColor(COLOR_PRIMARY_SOFT).borderRadius(17).enabled(!this.isRefreshing).padding({ left: 14, right: 14 })
+        Button(this.isRefreshing ? '刷新中' : '刷新').type(ButtonType.Normal).height(34).fontSize(12).fontColor(this.theme.primary)
+          .backgroundColor(this.theme.primarySoft).borderRadius(17).enabled(!this.isRefreshing).padding({ left: 14, right: 14 })
           .onClick(() => this.loadNasFiles())
       }.width('100%').padding({ left: 20, right: 20 }).alignItems(VerticalAlign.Center)
 
       if (this.nasError !== '') {
         Row() {
-          Text('⚠').fontSize(14).fontColor(COLOR_DANGER).margin({ right: 8 })
-          Text(this.nasError).fontSize(12).fontColor(COLOR_DANGER).layoutWeight(1)
-        }.width('100%').padding(14).borderRadius(18).backgroundColor(COLOR_DANGER_SOFT).margin({ left: 20, right: 20 })
+          Text('⚠').fontSize(14).fontColor(this.theme.warningIcon).margin({ right: 8 })
+          Text(this.nasError).fontSize(12).fontColor(this.theme.danger).layoutWeight(1)
+        }.width('100%').padding(14).borderRadius(18).backgroundColor(this.theme.warningBg).margin({ left: 20, right: 20 })
       }
 
       if (this.nasFiles.length > 0) {
@@ -1707,7 +2145,7 @@ struct Index {
                     .aspectRatio(1)
                     .objectFit(ImageFit.Cover)
                     .borderRadius(8)
-                    .backgroundColor('#F0F0F0')
+                    .backgroundColor(this.theme.imageBg)
                     .interpolation(ImageInterpolation.High)
                     .onComplete(() => {
                       hilog.debug(0x0000, TAG, '%{public}s', '缩略图加载成功: ' + file.name);
@@ -1719,41 +2157,41 @@ struct Index {
                     })
                 } else if (this.failedThumbs.has(file.name)) {
                   Column() {
-                    Text('❌').fontSize(18).fontColor('#CCCCCC')
-                    Text('加载失败').fontSize(9).fontColor('#999999').margin({ top: 2 })
+                    Text('❌').fontSize(18).fontColor(this.theme.placeholderText)
+                    Text('加载失败').fontSize(9).fontColor(this.theme.placeholderText).margin({ top: 2 })
                   }
                   .width('100%')
                   .aspectRatio(1)
                   .justifyContent(FlexAlign.Center)
-                  .backgroundColor('#FAFAFA')
+                  .backgroundColor(this.theme.imageFailBg)
                   .borderRadius(8)
-                  .border({ width: 1, color: '#EEEEEE', style: BorderStyle.Dashed })
+                  .border({ width: 1, color: this.theme.imageBorderSoft, style: BorderStyle.Dashed })
                 } else {
                   Column() {
                     LoadingProgress()
                       .width(24)
                       .height(24)
-                      .color('#CCCCCC')
+                      .color(this.theme.primary)
                     Text('加载中...')
                       .fontSize(9)
-                      .fontColor('#999999')
+                      .fontColor(this.theme.placeholderText)
                       .margin({ top: 4 })
                   }
                   .width('100%')
                   .aspectRatio(1)
                   .justifyContent(FlexAlign.Center)
-                  .backgroundColor('#F5F5F5')
+                  .backgroundColor(this.theme.imageLoadingBg)
                   .borderRadius(8)
-                  .border({ width: 1, color: '#E0E0E0', style: BorderStyle.Dashed })
+                  .border({ width: 1, color: this.theme.imageBorder, style: BorderStyle.Dashed })
                 }
                 Text(file.name).fontSize(10).maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
                   .width('100%').margin({ top: 3 })
-                Text(formatFileSize(file.size)).fontSize(9).fontColor('#999999')
+                Text(formatFileSize(file.size)).fontSize(9).fontColor(this.theme.placeholderText)
               }.width('100%').padding(8).onClick(() => this.previewImage(file.name))
-              .borderRadius(18).backgroundColor(COLOR_SURFACE)
+              .borderRadius(18).backgroundColor(this.theme.surface)
               .scale({ x: this.longPressedItem === file.name ? 0.95 : 1.0, y: this.longPressedItem === file.name ? 0.95 : 1.0 })
               .opacity(this.longPressedItem === file.name ? 0.7 : 1.0)
-              .shadow({ radius: 14, color: '#120A59F7', offsetX: 0, offsetY: 6 })
+              .shadow({ radius: 14, color: this.theme.gridShadow, offsetX: 0, offsetY: 6 })
               .gesture(
                 LongPressGesture({ repeat: false, duration: 300 })
                   .onAction((event?: GestureEvent) => { this.onLongPressFile(file.name); })
@@ -1766,81 +2204,81 @@ struct Index {
 
       if (this.nasFiles.length === 0 && !this.isLoading && this.nasError === '') {
         Column() {
-          Text('图片会在这里出现').fontSize(16).fontWeight(FontWeight.Medium).fontColor(COLOR_TEXT).margin({ bottom: 8 })
-          Text($r('app.string.empty_file_list')).fontSize(12).fontColor(COLOR_MUTED)
+          Text('图片会在这里出现').fontSize(16).fontWeight(FontWeight.Medium).fontColor(this.theme.text).margin({ bottom: 8 })
+          Text($r('app.string.empty_file_list')).fontSize(12).fontColor(this.theme.muted)
         }.width('100%').layoutWeight(1).justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
           .padding({ left: 20, right: 20 })
       }
-    }.width('100%').height('100%').backgroundColor(COLOR_BG)
+    }.width('100%').height('100%').backgroundColor(this.theme.bg)
       .padding({ bottom: 8 })
   }
 
   @Builder LoadingOverlay() {
     Column() {
-      LoadingProgress().width(48).height(48).color('#007DFF').margin({ bottom: 16 })
-      Text(this.loadingText).fontSize(15).fontColor(COLOR_SURFACE)
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
+      LoadingProgress().width(48).height(48).color(this.theme.primary).margin({ bottom: 16 })
+      Text(this.loadingText).fontSize(15).fontColor(this.theme.surface)
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(this.theme.overlay)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(100)
   }
 
   @Builder DeleteConfirmDialog() {
     Column() {
       Column() {
-        Text('🗑️ 确认删除').fontSize(19).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        Text('确定要删除以下文件吗？\n此操作不可恢复！').fontSize(14).fontColor('#555555').textAlign(TextAlign.Center).margin({ bottom: 12 })
-        Text(this.fileToDelete).fontSize(13).fontColor('#CC0000').fontWeight(FontWeight.Medium)
+        Text('🗑️ 确认删除').fontSize(19).fontWeight(FontWeight.Bold).fontColor(this.theme.text).margin({ bottom: 12 })
+        Text('确定要删除以下文件吗？\n此操作不可恢复！').fontSize(14).fontColor(this.theme.dialogTextSecondary).textAlign(TextAlign.Center).margin({ bottom: 12 })
+        Text(this.fileToDelete).fontSize(13).fontColor(this.theme.danger).fontWeight(FontWeight.Medium)
           .maxLines(2).textOverflow({ overflow: TextOverflow.Ellipsis }).textAlign(TextAlign.Center)
-          .width('90%').backgroundColor('#FFF5F5').padding(10).borderRadius(8).margin({ bottom: 24 })
+          .width('90%').backgroundColor(this.theme.dangerSoft).padding(10).borderRadius(8).margin({ bottom: 24 })
         Row({ space: 14 }) {
-          Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor('#E8E8E8').fontColor('#333333').borderRadius(21)
+          Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor(this.theme.dialogCancelBg).fontColor(this.theme.dialogCancelText).borderRadius(21)
             .onClick(() => this.cancelDelete())
-          Button('🗑️ 删除').layoutWeight(1).height(42).fontSize(15).backgroundColor('#CC0000').fontColor('#FFFFFF').borderRadius(21)
+          Button('🗑️ 删除').layoutWeight(1).height(42).fontSize(15).backgroundColor(this.theme.dialogDangerBg).fontColor(this.theme.dialogDangerText).borderRadius(21)
             .onClick(() => this.confirmDelete())
         }.width('100%')
-      }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
-        .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
+      }.width('82%').padding(24).backgroundColor(this.theme.dialogSurface).borderRadius(16)
+        .shadow({ radius: 24, color: this.theme.dialogShadow, offsetX: 0, offsetY: 8 })
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(this.theme.overlay)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(120)
   }
 
   @Builder UploadConfirmDialog() {
     Column() {
       Column() {
-        Text('确认上传').fontSize(19).fontWeight(FontWeight.Bold).margin({ bottom: 12 })
-        Text('是否确认将刚拍摄的照片上传到 NAS？').fontSize(14).fontColor('#555555').textAlign(TextAlign.Center).margin({ bottom: 20 })
+        Text('确认上传').fontSize(19).fontWeight(FontWeight.Bold).fontColor(this.theme.text).margin({ bottom: 12 })
+        Text('是否确认将刚拍摄的照片上传到 NAS？').fontSize(14).fontColor(this.theme.dialogTextSecondary).textAlign(TextAlign.Center).margin({ bottom: 20 })
         Row({ space: 14 }) {
-          Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor('#E8E8E8').fontColor('#333333').borderRadius(21)
+          Button('取消').layoutWeight(1).height(42).fontSize(15).backgroundColor(this.theme.dialogCancelBg).fontColor(this.theme.dialogCancelText).borderRadius(21)
             .onClick(() => this.cancelUpload())
-          Button('上传').layoutWeight(1).height(42).fontSize(15).backgroundColor('#007DFF').fontColor('#FFFFFF').borderRadius(21)
+          Button('上传').layoutWeight(1).height(42).fontSize(15).backgroundColor(this.theme.dialogPrimaryBg).fontColor(this.theme.dialogPrimaryText).borderRadius(21)
             .onClick(() => this.confirmUpload())
         }.width('100%')
-      }.width('82%').padding(24).backgroundColor('#FFFFFF').borderRadius(16)
-        .shadow({ radius: 24, color: '#22000000', offsetX: 0, offsetY: 8 })
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
+      }.width('82%').padding(24).backgroundColor(this.theme.dialogSurface).borderRadius(16)
+        .shadow({ radius: 24, color: this.theme.dialogShadow, offsetX: 0, offsetY: 8 })
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(this.theme.overlay)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(120)
   }
 
   @Builder DeletingOverlay() {
     Column() {
-      LoadingProgress().width(48).height(48).color('#CC0000').margin({ bottom: 16 })
-      Text('正在删除...').fontSize(15).fontColor(COLOR_SURFACE)
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(COLOR_OVERLAY)
+      LoadingProgress().width(48).height(48).color(this.theme.danger).margin({ bottom: 16 })
+      Text('正在删除...').fontSize(15).fontColor(this.theme.surface)
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(this.theme.overlay)
       .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).zIndex(100)
   }
 
   @Builder ImageViewerBuilder() {
     Stack({ alignContent: Alignment.Center }) {
       Image(this.selectedImagePath).objectFit(ImageFit.Contain)
-        .width('100%').height('100%').backgroundColor('#000000')
+        .width('100%').height('100%').backgroundColor(this.theme.viewerImageBg)
         .onComplete(() => {})
         .onError((err: ImageError) => { hilog.error(0x0000, 'Viewer', '%{public}s', '查看大图失败: ' + this.selectedImage); })
       Column({ space: 12 }) {
-        Text(this.selectedImage).fontSize(13).fontColor('#FFFFFF').maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
+        Text(this.selectedImage).fontSize(13).fontColor(this.theme.surface).maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis })
           .width(200).textAlign(TextAlign.Center)
-        Text(formatFileSize(this.getSelectedSize())).fontSize(12).fontColor('#D8E0EA')
-      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).backgroundColor('#660A1220').borderRadius(18)
+        Text(formatFileSize(this.getSelectedSize())).fontSize(12).fontColor(this.theme.viewerMeta)
+      }.padding({ left: 16, right: 16, top: 12, bottom: 12 }).backgroundColor(this.theme.viewerInfoBg).borderRadius(18)
         .position({ bottom: this.navBarHeight + 24 }).alignItems(HorizontalAlign.Center)
-    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor('#E0000000')
+    }.width('100%').height('100%').position({ x: 0, y: 0 }).backgroundColor(this.theme.viewerBackdrop)
       .visibility(this.viewerVisible ? Visibility.Visible : Visibility.Hidden)
       .onClick(() => this.closeViewer())
   }
